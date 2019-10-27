@@ -6,6 +6,8 @@ var Scene = function(game){
     var paddle = Paddle(game)
     var ball = Ball(game)//其实两个都类似所以可以鉴定形成一个类
     var blocks = loadLevel(game, 1)
+    
+    //实现注册事件
     game.registerAction('a', function(){
         paddle.moveLeft()//把注册的键位和更新的函数都确定了，而整个game对象内部都有监听所以可以直接行驶功能
     })
@@ -17,6 +19,7 @@ var Scene = function(game){
     })
 
     var enbaleDrag = false
+    //实现拖拽功能
     window.addEventListener('mousedown', function(event){
         var x = event.offsetX
         var y = event.offsetY

@@ -13,13 +13,15 @@ var imageFromPath = function(path){
 }
 var rectIntersects = function(a, b) {
     var o = a
-    //log('a, b', a, b)
-    //log('o.image.height', o.image.height)
-    // log('o.h', o.h)
+
     if (b.y > o.y && b.y < o.y + o.h) {
         if (b.x > o.x && b.x < o.x + o.w) {
             return true
         }
     }
     return false
+}
+const randomBetween = function(start, end){
+    var n = Math.random() * (end - start + 1)
+    return Math.floor(n + start)
 }

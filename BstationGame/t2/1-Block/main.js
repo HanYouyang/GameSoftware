@@ -10,6 +10,7 @@ var loadLevel = function(game, n) {
     return blocks
 }
 var blocks = []
+//建立debug模式也需要独立出来说
 var enableDebugMode = function(game, enable) {
     if (!enable) {
         return
