@@ -7,6 +7,8 @@ class Enemy extends GuaImage {
     }
     setup(){
         this.name = 'enemy'
+        this.number = randomBetween(0, 9999999)
+        
         this.coolDown = 3
         this.speed = randomBetween(1, 3)
         this.x = randomBetween(0, 300)
@@ -14,7 +16,7 @@ class Enemy extends GuaImage {
     }
     fire(){
         if (this.coolDown == 0) {
-            this.coolDown = config.fire_coolDown
+            this.coolDown = config.enemy_fire_coolDown
 
             var b = EnemyBullet.new(this.game)
             b.x = this.x + this.w / 2
@@ -50,14 +52,16 @@ class Enemy extends GuaImage {
 
         for (let i = 0; i < this.scene.elements.length; i++) {
             let element = this.scene.elements[i]
-            if ((element.name == 'player') && this.collide(element)) {
-                this.scene.removeElement(element)
-                this.scene.allEnemy.splice(1)
 
+            if ((element.name == 'player' || element.name == 'player_bullet') && this.collide(element)) {
+                // log('this', this)
+                this.scene.removeElement(element)
+                
                 let x = element.x
                 let y = element.y
                 let ps2 = GuaParticleSystem.new(this.scene.game, x, y)
                 this.scene.addElement(ps2)
+
             }
         }
 

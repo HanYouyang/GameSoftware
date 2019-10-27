@@ -19,7 +19,7 @@ class GuaScene {
         for (let i = 0; i < this.elements.length; i++) {
             let element = this.elements[i]
             if (element == guaImage) {
-                this.elements.splice(i)
+                this.elements.splice(i, 1)
             }
         }
     }

@@ -1,12 +1,12 @@
 const config = {
     player_speed: 10,
-    bullet_speed: 5,
-    enemy_bullet_speed: 4,
+    bullet_speed: 20,
+    enemy_bullet_speed: 2,
     cloud_speed: 1,
-    enemy_speed: 2,
+    enemy_speed: 1,
     fire_coolDown: 10,
+    enemy_fire_coolDown: 80,
 }
-
 class Scene extends GuaScene {
     constructor(game){
         super(game)
@@ -16,7 +16,7 @@ class Scene extends GuaScene {
     setup(){
         this.numberOfEnemy = 5
         this.allEnemy = []
-        //读图部分和画图部分还是要分开，避免出现找不到资源
+
         var game = this.game
         this.bg = GuaImage.new(game, 'sky')
         this.cloud = Cloud.new(game)
@@ -36,7 +36,7 @@ class Scene extends GuaScene {
             this.allEnemy.push(e)
             this.addElement(e)
         }
-        this.enemies = this.allEnemy
+        // this.enemies = this.allEnemy
     }
     setupInputs(){
         var g = this.game
@@ -56,6 +56,7 @@ class Scene extends GuaScene {
         g.registerAction('j', function(){
             s.player.fire()
         })
+
     }
     update(){
         // super.update()

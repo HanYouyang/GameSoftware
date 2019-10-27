@@ -28,13 +28,23 @@ class Bullet extends GuaImage {
         if (this.y < 0) {
             return
         }
-        // this.speed = config.bullet_speed
         this.y -= this.speed
+
         for (let i = 0; i < this.scene.elements.length; i++) {
             let element = this.scene.elements[i]
-            if (element.name == 'enemy' && this.collide(element)) {
+            if (( element.name == 'enemy' || element.name == 'enemy_bullet') && this.collide(element)) {
                 this.scene.removeElement(element)
-                this.scene.allEnemy.splice(1)
+
+                if (element.name == 'enemy') {
+                    log('element.number', element.number)
+                    for (let j = 0; j < this.scene.allEnemy.length; j++) {
+                        let e = this.scene.allEnemy[j]
+                        if (element.number == e.number) {
+                            log('e.number', e.number)
+                            this.scene.allEnemy.splice(j)
+                        }
+                    }
+                }
 
                 let x = element.x
                 let y = element.y

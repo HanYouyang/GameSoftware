@@ -32,14 +32,18 @@ class EnemyBullet extends GuaImage {
         this.y += this.speed
         for (let i = 0; i < this.scene.elements.length; i++) {
             let element = this.scene.elements[i]
-            if ((element.name == 'player'||element.name == 'player_bullet') && this.collide(element)) {
+            if (( element.name == 'player'|| element.name == 'player_bullet') && this.collide(element)) {
                 this.scene.removeElement(element)
-                this.scene.allEnemy.splice(1)
 
                 let x = element.x
                 let y = element.y
                 let ps2 = GuaParticleSystem.new(this.scene.game, x, y)
                 this.scene.addElement(ps2)
+
+                if (element.name == 'player') {
+                    let label = GuaLabel.new(this.scene.game, 'Game Over!')
+                    this.scene.addElement(label)
+                }
             }
         }
     }
