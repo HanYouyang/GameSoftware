@@ -5,6 +5,7 @@ class GuaGame {
         this.runCallback = runCallback
 
         this.scene = null
+        this.score = 0
         this.actions = {}
         this.keydowns = {}
 

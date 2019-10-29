@@ -1,20 +1,22 @@
-class SceneEnd extends GuaScene {
+class SceneGo extends GuaScene {
     constructor(game){
         super(game)
 
         var bg = GuaImage.new(game, 'bg')
         this.addElement(bg)
 
-        var over = GuaImage.new(game, 'over')
-        over.x = 20
-        over.y = 100
-        this.addElement(over)
+        var ready = GuaImage.new(game, 'ready')
+        ready.x = 45
+        ready.y = 30
+        this.addElement(ready)
+
 
         var bird = Birds.new(game)
         bird.x = 100
-        bird.y = 435
+        bird.y = 230
         this.bird = bird
         this.addElement(bird)
+
 
         this.skipCount = 4
         this.grounds = []
@@ -30,24 +32,14 @@ class SceneEnd extends GuaScene {
         this.pipePaused = false
         this.birdPaused = true
 
-
-        game.registerAction('r', function(){
-            var gameRe = SceneGo.new(game)
+        game.registerAction('g', function(){
+            var gameRe = SceneTitle.new(game)
             game.replaceScene(gameRe)
         })
-
-
-        var label = GuaLabel.new(game, '按 r 重新开始游戏')
-        label.x = 60
-        label.y = 290
-        this.addElement(label)
-
-        var scoreLabel = Score.new(game, '积分')
-        scoreLabel.x = 60
-        scoreLabel.y = 250
-        scoreLabel.font = 20
-        this.addElement(scoreLabel)
-
     }
+
+    // update(){
+        
+    // }
 
 }

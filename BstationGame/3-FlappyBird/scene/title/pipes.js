@@ -10,7 +10,6 @@ class Pipes {
             var p1 = GuaImage.new(game, 'pipe')
             p1.flipY = true
             p1.x = 250 + (i + 3) * this.wideSpace
-            log('p1.x now', p1.x)
             var p2 = GuaImage.new(game, 'pipe')
             p2.x = p1.x
             this.resetPipePosition(p1, p2)
@@ -26,12 +25,11 @@ class Pipes {
         p2.y = p1.y + p1.h + this.pipeSpaces
     }
     debug(){
-        // this.wideSpace = config.pipe_space_test.value
-
+        this.wideSpace = config.pipe_space_test.value
         this.pipeSpaces = config.pipe_space.value
     }
     update(){
-        if (this.scene.paused) {
+        if (this.scene.pipePaused) {
             return
         }
         for (let i = 0; i < this.pipes.length / 2; i += 2) {

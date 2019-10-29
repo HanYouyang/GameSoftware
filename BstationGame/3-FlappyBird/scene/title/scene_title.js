@@ -1,12 +1,14 @@
 class SceneTitle extends GuaScene {
     constructor(game){
         super(game)
+        this.pipePaused = false
+        this.birdPaused = false
 
         var bg = GuaImage.new(game, 'bg')
         this.addElement(bg)
 
-        this.score = 0
-        var label = Score.new(game, '目前积分')
+        this.game.score = 0
+        var label = Score.new(game, '积分')
         this.addElement(label)
 
         this.pipe = Pipes.new(game)
@@ -29,9 +31,7 @@ class SceneTitle extends GuaScene {
             this.grounds.push(g)          
         }
 
-        this.paused = false
         this.setUpInputs()
-        // log('this.elements', this.elements)
     }
 
     //这里不能自己写有update，会覆盖其他内容
@@ -51,7 +51,7 @@ class SceneTitle extends GuaScene {
             if (e.name == 'pipes') {
                 for (var p of e.pipes) {
                     if (this.bird.x == p.x) {
-                        this.score += 50
+                        this.game.score += 50
                     }
                 }
             }

@@ -30,6 +30,7 @@ class Birds {
 
         this.lifes = 5
         this.unTouchable = 1000
+
     }
     static new(game){
         return new this(game)
@@ -78,6 +79,9 @@ class Birds {
     }
 
     update(){
+        if (this.scene.birdPaused) {
+            return
+        }
         //更新Alpha
         if (this.alpha > 0) {
             this.alpha -= 0.05
@@ -103,8 +107,8 @@ class Birds {
             if (e.name == 'pipes') {
                 for (var p of e.pipes) {
                     if (this.collide(p)) {
-                        this.scene.paused = true
-                        this.vy = 2
+                        this.scene.pipePaused = true
+                        this.vy = 3
                         if (this.y == baseHeight) {
                             this.kill()
                         }

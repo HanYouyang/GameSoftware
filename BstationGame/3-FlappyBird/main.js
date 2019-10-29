@@ -34,6 +34,8 @@ var __main = function(){
     var images = {
         
         //flappy bird
+        ready: 'img/bird/ready.png',
+        over: 'img/bird/over.png',
         bg: 'img/bird/bg.png',
         ground: 'img/bird/ground.png',
         b1: 'img/bird/b1.png',
@@ -43,8 +45,10 @@ var __main = function(){
     }
     //这里不能重新定义Paused，直接让内部关于Paused的内容全部按照拆出来的函数进行运行
     var game = GuaGame.instance(100, images, function(game){
-        // var scene = Scene.new(game)//class生成的类还必须用new
+        // var scene = Scene.new(game)
         var scene = SceneTitle.new(game)//class生成的类还必须用new
+        // var scene = SceneGo.new(game)//class生成的类还必须用new
+        // var scene = SceneEnd.new(game)//class生成的类还必须用new
         game.runWithScene(scene)
     })
     enableDebugMode(game, true)
