@@ -1,4 +1,4 @@
-class GuaLabel {
+class Score {
     constructor(game, text){
         this.game = game
         this.text = text
@@ -7,10 +7,12 @@ class GuaLabel {
         return new this(game, text)
     }
     draw(){
-        this.game.context.font = '30px serif'
+        this.game.context.font = '15px serif'
         // log('draw label', this.game, this.text)
-        this.game.context.fillText(this.text, 90, 600)
+        this.game.context.fillText(this.text, 0, 20)
     }
     update(){
+        this.text = `积分：${this.scene.score}`
+        this.game.context.fillText(this.text, 0, 20)
     }
 }

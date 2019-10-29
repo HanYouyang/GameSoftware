@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>game 1</title>
+    <title>Bird World!</title>
     <style media='screen'>
         canvas{
             border: 1px black solid;
@@ -15,24 +15,24 @@
     <script src="guagame/gua_scene.js"></script>
     <script src="guagame/gua_image.js"></script>
     <script src="guagame/gua_particle.js"></script>
-    <script src="guagame/gua_label.js"></script>
     <script src="guagame/gua_animation.js"></script>
     <script src="guagame/utils.js"></script>
-    <script src="guagame/config.js"></script>
     <!-- 各种组件内容 -->
-    <script src="scene/main/ball.js"></script>
-    <script src="scene/main/block.js"></script>
-    <script src="scene/main/paddle.js"></script>
+    <script src="scene/title/pipes.js"></script>
+    <script src="scene/title/config.js"></script>
+    <script src="scene/title/bird.js"></script>
+    <script src="scene/title/board.js"></script>
+    <script src="scene/title/label.js"></script>
     <!-- 关卡编辑 -->
-    <script src="levels.js"></script>
+    <!-- <script src="levels.js"></script> -->
     <!-- 场景情况 -->
-    <script src="scene/main/scene.js"></script>
-    <script src="scene/end/sceneEnd.js"></script>
-    <script src="scene/title/title.js"></script>
+    <script src="scene/main/scene_main.js"></script>
+    <script src="scene/end/scene_end.js"></script>
+    <script src="scene/title/scene_title.js"></script>
 </head>
 <body> 
     <!-- 别忘记加上这一段主体 -->
-    <canvas id='id-canvas' width="1200" height="900"></canvas>
+    <canvas id='id-canvas' width="300" height="500"></canvas>
     <hr>
     <input id='id-input-speed' type="range"  value="1">
     <div class=''>

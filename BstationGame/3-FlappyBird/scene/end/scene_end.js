@@ -9,8 +9,8 @@ class SceneEnd extends GuaScene {
     }
 
     draw(){
-        this.game.context.font = '30px serif'
-        this.game.context.fillText('游戏结束，按 r 重新开始游戏', 90, 600)
+        this.game.context.font = '20px serif'
+        this.game.context.fillText('游戏结束，按 r 重新开始游戏', 20, 90)
     }
 
     update(){

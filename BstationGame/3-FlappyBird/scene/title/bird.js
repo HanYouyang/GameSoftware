@@ -1,9 +1,11 @@
-class GuaAnimation {
+class Birds {
     constructor(game){
         this.game = game 
         this.animations = {
             b: [],
         }
+        this.name = 'bird'
+        this.lives = 1
         // 抽象+继承+复用
         for (var i = 1; i < 3; i ++) {
             var name = 'b' + i
@@ -25,6 +27,9 @@ class GuaAnimation {
 
         this.rotation = 0
         this.alpha = 1
+
+        this.lifes = 5
+        this.unTouchable = 1000
     }
     static new(game){
         return new this(game)
@@ -56,18 +61,21 @@ class GuaAnimation {
         this.vy = -3
         this.rotation = -45
     }
-    collide(item){
-        return  (this.x < item.x + item.width) &&
-                (this.x + this.width > item.x) &&
-                (this.y < item.y + item.height) &&
-                (this.y + this.height > item.y);
-      }
-    
-
-
-
-
-
+    //碰撞检测
+    aInb(x, x1, x2){
+        return x >= x1 && x <= x2
+    }
+    collide(other){
+        let a = this
+        let b = other
+        // log('a and b', a, b) 
+        if ( this.aInb(a.x, b.x, b.x + b.w) || this.aInb(b.x, a.x, a.x + a.w) ) {
+            if ( this.aInb(a.y, b.y, b.y + b.h) || this.aInb(b.y, a.y, a.y + a.h) ) {
+                return true
+            }
+        }
+        return false
+    }
 
     update(){
         //更新Alpha
@@ -90,6 +98,24 @@ class GuaAnimation {
             this.frameIndex = ( this.frameIndex + 1 ) % this.frames().length
             this.texture = this.frames()[this.frameIndex]
         }
+
+        for (var e of this.scene.elements) {
+            if (e.name == 'pipes') {
+                for (var p of e.pipes) {
+                    if (this.collide(p)) {
+                        this.scene.paused = true
+                        this.vy = 2
+                        if (this.y == baseHeight) {
+                            this.kill()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    kill(){
+        var gameRe = SceneEnd.new(this.game)
+        this.game.replaceScene(gameRe)
     }
     move(x, keyStatus){
         this.flipx = x < 0
