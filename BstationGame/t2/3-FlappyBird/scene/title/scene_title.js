@@ -20,15 +20,9 @@ class SceneTitle extends GuaScene {
         this.bird = bird
         this.addElement(bird)
 
-        this.skipCount = 4
-        this.grounds = []
-        for (let i = 0; i < 25; i++) {
-            var g = GuaImage.new(game, 'ground')
-            g.x = i * 19
-            g.y = 462
-            g.name = 'ground'
+        var grd = Grounds.new(game)
+        for (var g of grd.grounds) {
             this.addElement(g)
-            this.grounds.push(g)          
         }
 
         this.setUpInputs()
@@ -37,16 +31,6 @@ class SceneTitle extends GuaScene {
     //这里不能自己写有update，会覆盖其他内容
     update(){
         super.update()
-        this.skipCount --
-        var offset = -2
-        if (this.skipCount == 0) {
-            this.skipCount = 4
-            offset = 6
-        }
-        for (let i = 0; i < 25; i++) {
-            var g = this.grounds[i]
-            g.x += offset      
-        }
         for (var e of this.elements) {
             if (e.name == 'pipes') {
                 for (var p of e.pipes) {

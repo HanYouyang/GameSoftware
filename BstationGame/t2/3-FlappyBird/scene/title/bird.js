@@ -108,7 +108,7 @@ class Birds {
                 for (var p of e.pipes) {
                     if (this.collide(p)) {
                         this.scene.pipePaused = true
-                        this.vy = 3
+                        this.vy = 5
                         if (this.y == baseHeight) {
                             this.kill()
                         }

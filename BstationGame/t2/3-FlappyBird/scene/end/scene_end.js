@@ -16,15 +16,9 @@ class SceneEnd extends GuaScene {
         this.bird = bird
         this.addElement(bird)
 
-        this.skipCount = 4
-        this.grounds = []
-        for (let i = 0; i < 25; i++) {
-            var g = GuaImage.new(game, 'ground')
-            g.x = i * 19
-            g.y = 462
-            g.name = 'ground'
+        var grd = Grounds.new(game)
+        for (var g of grd.grounds) {
             this.addElement(g)
-            this.grounds.push(g)          
         }
 
         this.pipePaused = false
