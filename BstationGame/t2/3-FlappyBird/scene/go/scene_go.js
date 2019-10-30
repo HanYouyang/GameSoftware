@@ -7,12 +7,12 @@ class SceneGo extends GuaScene {
 
         var ready = GuaImage.new(game, 'ready')
         ready.x = 45
-        ready.y = 30
+        ready.y = 100
         this.addElement(ready)
 
         var bird = Birds.new(game)
         bird.x = 100
-        bird.y = 230
+        bird.y = 210
         this.bird = bird
         this.addElement(bird)
 
@@ -26,11 +26,11 @@ class SceneGo extends GuaScene {
 
         var label = GuaLabel.new(game, '按 G 重新开始游戏')
         label.x = 60
-        label.y = 290
+        label.y = 260
         this.addElement(label)
         var label2 = GuaLabel.new(game, '按 J 向上跳跃')
         label2.x = 60
-        label2.y = 320
+        label2.y = 290
         this.addElement(label2)
 
         game.registerAction('g', function(){

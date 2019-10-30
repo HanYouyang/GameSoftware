@@ -16,7 +16,7 @@ class SceneTitle extends GuaScene {
 
         var bird = Birds.new(game)
         bird.x = 100
-        bird.y = 230
+        bird.y = 210
         this.bird = bird
         this.addElement(bird)
 

@@ -31,7 +31,7 @@ class SceneEnd extends GuaScene {
         })
 
 
-        var label = GuaLabel.new(game, '按 r 重新开始游戏')
+        var label = GuaLabel.new(game, '按 R 重新开始游戏')
         label.x = 60
         label.y = 290
         this.addElement(label)
