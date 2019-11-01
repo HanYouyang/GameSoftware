@@ -1,4 +1,4 @@
-# 模拟
+# 模拟 扫雷
 import random
 def minesweeper(m, n, p):
     board = [[None] * (n + 2) for i in range(m + 2)]
