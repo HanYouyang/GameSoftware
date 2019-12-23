@@ -9,7 +9,6 @@ def coin(n):
     dp[3] = 2
     for i in range(4, n + 1):
         dp[i] = dp[i - 1] + dp[i - 3] + dp[i - 4]
-
     return dp[n]
 
 # 2.1 入室抢劫
@@ -38,7 +37,6 @@ def rob3(nums):
         return 0
     if len(nums) == 1:
         return nums[0]
-
     return max(robRange(nums, 0, len(nums) - 1),\
                robRange(nums, 1, len(nums)))
 def robRange(nums, start, end):
@@ -53,7 +51,7 @@ def rob4(nums):
         for i in nums: 
             no, yes = max(no, yes), i + no
         return max(no, yes)
-    return max(rob(nums[len(nums) != 1:]), rob(nums[:-1]))
+    return max(rob(nums[len(nums) != 1 :]), rob(nums[:-1]))
 
 # 2.3 抢劫聚会
 # 抢一层就不能抢上下层
@@ -150,7 +148,247 @@ def maxProfit12(prices):
 
 # 1.2 买卖股票2
 # 任意多次 必须先买在卖
-# 还是得找最小值再找差
+# 只要有正差就记录下来 不必在乎真实买卖过程
+def maxProfit21(prices):
+    max_profit = 0
+    for i in range(1, len(prices)):
+        if prices[i] > prices[i - 1]:
+            max_profit += prices[i] - prices[i - 1]
+    return max_profit
+def maxProfit22(prices):
+    max_profit = 0
+    for i in range(1, len(prices)):
+        max_profit += max(0, prices[i] - prices[i - 1])
+    return max_profit
 
+# 1.3 买卖股票3
+# 任意多次 每次交纳手续费
+# 但此时要尽可能减少交易次数 所以最终两者都需要做成
+# 今天的状态为两种，要么是买要么是卖，都求今天的最大值
+# 今天 买就是昨天卖了或者昨天没动 今天卖就是昨天买了或者昨天没动
+# 第一题也可以这么做
+def maxProfit3(prices, fee):
+    cash, hold = 0, -prices[0]
+    for i in range(1, len(prices)):
+        cash, hold = max(cash, hold + prices[i] - fee), max(hold, cash - prices[i])
+    return cash
 
+# 1.4 买卖股票4
+# 进行两次交易 无手续费
+# 可以进行拆分 从中间进行拆分 拆分较为繁琐
+# 先从前往后看最大利润 再从后往前看最大利润
+def maxProfit4(prices):
+    total_max_profit = 0
+    n = len(prices)
+    left_profits = [0] * n
+    min_price = float('inf')
 
+    for i in range(n):
+        min_price = min(min_price, prices[i])
+        total_max_profit = max(total_max_profit, prices[i] - min_price)
+        left_profits[i] = total_max_profit
+
+    max_profit = 0
+    max_price = float('-inf')
+    for i in range(n - 1, 0, -1):
+        max_price = max(max_price, prices[i])
+        max_profit = max(max_profit, max_price - prices[i])
+        total_max_profit = max(total_max_profit, max_profit + left_profits[i - 1])
+    return total_max_profit
+
+# 1.5 买卖股票5
+# k次交易
+# 用全局和局部两个值相互套用看最值
+def maxProfit5(prices, k):
+    if len(prices) < 2:
+        return 0
+    if len(prices) <= k / 2:
+        maxProfit5(prices)
+
+    local = [0] * (k + 1)
+    globl = [0] * (k + 1)    
+    for i in range(1, len(prices)):
+        diff = prices[i] - prices[i - 1]
+        j = k
+        while j > 0:
+            local[j] = max(globl[j - 1], local[j] + diff)
+            globl[j] = max(globl[j], local[j])
+            j -= 1
+    return globl[k]
+
+# 1.6 买卖股票6
+# 任意多次 卖出后要休息一天
+# 对之前公式进行修改 也就意味着计算的过程i-2的内容
+def maxProfit6(prices):
+    if len(prices) < 2:
+        return 0
+    n = len(prices)
+    sell = [0] * n
+    buy  = [0] * n
+    sell[0] = 0
+    buy[0] = -prices[0]
+    for i in range(1, n):
+        sell[i] = max(sell[i - 1], buy[i - 1] + prices[i])
+        buy[i] = max(buy[i - 1], (sell[i - 2] if i > 1 else 0) - prices[i])
+            
+    return sell[-1]
+
+# 03 二维动态规划
+# 1.1 独特路径
+# 第一行和第一列是只有一种铺满就是向直走
+# 后面的都是左上两格相加
+# 优化绝大多数是给定算法时间复杂度优化空间流程
+def uniquePaths1(m, n):
+    aux = [[1 for x in range(n)] for x in range(m)]
+    for i in range(1, m):
+        for j in range(1, n):
+            aux[i][j] = aux[i][j - 1] + aux[i - 1][j]
+    return aux[-1][-1]
+def uniquePaths2(m, n):
+    aux = [1 for x in range(n)]
+    for i in range(1, m):
+        for j in range(1, n):
+            aux[j] = aux[j] + aux[j - 1]
+    return aux[-1]
+
+# 1.2 独特路径2
+# 此时也是走不通就是设定为 后面也得设定为别的从上面走
+def uniquePathsWithObstacles(obstacleGrid):
+    M, N = len(obstacleGrid), len(obstacleGrid[0])
+    dp = [1] + [0] * (N - 1)
+    for i in range(M):
+        for j in range(N):
+            if obstacleGrid[i][j] == 1:
+                dp[j] = 0
+            elif j > 0:
+                dp[j] += dp[j - 1]
+    return dp[N - 1]
+
+# 2 棋盘移动
+# 找获利最大移动路线
+# dp去做但是此时出发点多 表达状态+lookup
+# 各个路径来到这个格子的最大值+本格值
+def movingBoard1(board):
+    result = board
+    m = len(board)
+    n = len(board[0])
+    for i in range(1, m):
+        for j in range (0, n):
+            result[i][j] = max(0 if j == 0 else result[i - 1][j - 1], \
+                               result[i - 1][j], \
+                               0 if j == n - 1 else result[i - 1][j + 1] ) \
+                            + board[i][j]
+    return max(result[-1])
+def movingBoard2(board):
+    result = board[0]
+    m = len(board)
+    n = len(board[0])
+    for i in range(1, m):
+        for j in range (0, n):
+            result[j] = max(0 if j == 0 else result[j-1], \
+                            result[j], \
+                            0 if j == n-1 else result[j+1] ) \
+                        + board[j]
+    return max(result)
+
+# 3 最大正方形
+# 找到正方形的时候还是会有重复计算
+# 在遍历过程中也是计算如何取方块值与周边的关系
+def maximalSquare(matrix):
+    if matrix == []:
+        return 0
+    m, n = len(matrix), len(matrix[0])
+    dp = [[0] * n for x in range(m)]
+    ans = 0
+    for x in range(m):
+        for y in range(n):
+            dp[x][y] = int(matrix[x][y])
+            if x and y and dp[x][y]:
+                dp[x][y] = min(dp[x - 1][y - 1], dp[x][y - 1], dp[x - 1][y]) + 1
+            ans = max(ans, dp[x][y])
+    return ans * ans
+
+# 4 0/1背包问题
+# 每个珠宝不重样有重量和价值 书包有承重上限
+# 1.子集穷举 o2^n 问题其实可以分割
+# 2.分解问题状态 依次选择是抢还是不抢
+# 状态数量都可以是抢还是不抢的乘积 但是依据重量列出情况 可能有重量限制
+# 如果每个可以拿k个那就是不断更新值
+def knapSack(W, wt, val, n):
+    K = [[0 for x in range(W + 1)] for x in range(n+1)]
+    # Build table K[][] in bottom up manner
+    for i in range(n + 1):
+        for w in range(W + 1):
+            if i == 0 or w == 0:
+                K[i][w] = 0
+            elif wt[i-1] <= w:
+                K[i][w] = max(val[i - 1] + K[i - 1][w - wt[i-1]],  K[i-1][w])
+            else:
+                K[i][w] = K[i - 1][w]
+    return K[n][W]
+
+# 5 最长公共子串
+# 不要求连续但是有顺序
+# 从后往前看是否相等可以降低问题难度 但是也是取两者之一往前的最值 
+# 是看是否相等的矩阵判断后移动
+def LCS(X, Y, m, n):
+    matrix = [[0 for k in range(n + 1)] for l in range(m + 1)]
+    result = 0
+ 
+    for i in range(m + 1):
+        for j in range(n + 1):
+            if (i == 0 or j == 0):
+                matrix[i][j] = 0
+            elif (X[i - 1] == Y[j - 1]):
+                matrix[i][j] = matrix[i - 1][j - 1] + 1
+                result = max(result, matrix[i][j])
+            else:
+                matrix[i][j] = max(matrix[i - 1][j], matrix[i][j - 1])
+    return result
+
+# 6 最长递增子串
+# 不要求连续
+# 1.sort之后用上面题目的思路建立两个数组
+# 2.DP虽然也暴力但是会存储起来 每个数字都自行比较前面所有数字
+# 3.剪枝 如果前者保持1那本身小就可替代 实则bs替换数字后获得长度真值要再记录
+def lengthOfLIS1(nums):
+    sortNums = sorted(nums)
+    n = len(nums)
+    return LCS(nums, sortNums, n, n)
+def lengthOfLIS2(nums):
+    if not nums:
+        return 0
+    dp = [1]*len(nums)
+    for i in range (1, len(nums)):
+        for j in range(i):
+            if nums[i] > nums[j]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+def lengthOfLIS3(nums):
+    def search(temp, left, right, target):
+        if left == right:
+            return left
+        mid = left + (right - left) // 2
+        return search(temp, mid + 1, right, target) if temp[mid]<target else search(temp, left, mid, target)
+    temp = []
+    for num in nums:
+        pos = search(temp, 0, len(temp), num)
+        if pos >= len(temp):
+            temp.append(num)
+        else:
+            temp[pos] = num
+    return len(temp)
+from bisect import bisect 
+def lengthOfLIS4(nums):
+    temp = []
+    for num in nums:
+        pos = bisect(temp, num) 
+        if pos >= len(temp):
+            temp.append(num)
+        else:
+            temp[pos] = num
+    return len(temp)
+
+# 7 矩阵乘法链
+# 实则卡特兰树
+# 对矩阵拆分的方法得出计算结果不断相加获得上面的值
