@@ -140,6 +140,136 @@ def sortStack(s):
     return r
 
 # 02
-# 
-# 
-# 
+from LinkedList import LinkedList
+from LinkedList import Node
+from ArrayStack import ArrayStack
+# 1.1 反转字符串
+# stack放进去再拿出来
+def reverse(s):
+    lst = []
+    for i in s:
+        lst.append(i)
+    result = []
+    while len(lst) != 0:
+        result.append(lst.pop())
+    return ''.join(result)
+
+# 1.2 判断回文
+# 正反相等即可
+def isPalindrome(s):
+    r = reverse(s)
+    return r == s
+
+# 2 合法括号
+# 程序写的不严谨因为没有考虑多种括号的综合
+def isValid(s):
+    stack = []
+    for c in s:
+        if (c == '(' or c == '[' or c == '{'):
+            stack.append(c)
+        else:
+            if len(stack)==0:
+                return False
+            if (   (c == ')' and stack[-1] == '(')
+                or (c == ']' and stack[-1] == '[')
+                or (c == '}' and stack[-1] == '{')):
+                stack.pop()
+            else:
+                return False
+    return len(stack) == 0
+
+# 3 最简路径
+# 面试给出步骤
+# 一个点是当前不做 正常元素push 两个点是上层pop
+def simplifyPath(path):
+    lst = []
+    splits = path.split("/")
+    for s in splits:
+        if s == "":
+            continue
+        if s == ".":
+            continue
+        if s == "..":
+            if len(lst) != 0:
+                lst.pop()
+        else:
+            lst.append(s)
+    result = []
+    if len(lst) == 0:
+        return "/"
+    result = ['/' + i for i in lst]
+    return ''.join(result)
+
+# 4 解密字符串
+# 面试要说明1放什么 2什么时候push 3什么时候pop
+# 找到右括号才能下结论拿到什么东西
+# stack放tuple
+# 找到左括号才能下结论到底数字是多少位
+def decodeString(s):
+    stack = []
+    stack.append(["", 1])
+    num = ""
+    for ch in s:
+        if ch.isdigit():
+            num += ch
+        elif ch == '[':
+            stack.append(["", int(num)])
+            num = ""
+        elif ch == ']':
+            st, k = stack.pop()
+            stack[-1][0] += st * k
+        else:
+            stack[-1][0] += ch
+    return stack[0][0]
+
+# 5 篮球游戏
+# 模拟规则
+def calPoints(ops):
+    stack = []
+    for op in ops:
+        if op == '+':
+            stack.append(stack[-1] + stack[-2])
+        elif op == 'C':
+            stack.pop()
+        elif op == 'D':
+            stack.append(2 * stack[-1])
+        else:
+            stack.append(int(op))
+    return sum(stack)
+
+# 6 星球碰撞
+# 模拟
+def asteroidCollision(asteroids):
+    ans = []
+    for new in asteroids:
+        while ans and new < 0 < ans[-1]:
+            if ans[-1] < -new:
+                ans.pop()
+                continue
+            elif ans[-1] == -new:
+                ans.pop()
+            break # 这个题还是不真明白
+        else:
+            ans.append(new)
+    return ans
+
+# 03
+# 1 下个更大数字
+# 找到数组中下个比当前值大的数字
+# 给栈如果有大于当前的就pop得到当前最大值 往后继续记录
+from ArrayStack import ArrayStack
+def nextGreat(nums):
+    if len(nums) == 0:
+        return
+    stack = []
+    stack.append(nums[0])
+    for i in range(1, len(nums)):
+        while (len(stack) != 0 and nums[i] > stack[-1]):
+            num = stack.pop()
+            print(num, ": ", array[i])
+        stack.append(nums[i])
+    while len(stack) != 0:
+        print(stack.pop(), ": -1")
+
+
+
