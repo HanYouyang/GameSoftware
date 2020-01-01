@@ -1,0 +1,5 @@
+pygame 2.0.0.dev6 (SDL 2.0.10, python 3.8.1)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+ele now set
+self.readLen now 2
+do now <function RunVM.doListGenr.<locals>.doSet at 0x10befe670>

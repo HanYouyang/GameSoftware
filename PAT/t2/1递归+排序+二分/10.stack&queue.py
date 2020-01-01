@@ -254,7 +254,7 @@ def asteroidCollision(asteroids):
     return ans
 
 # 03
-# 1 下个更大数字
+# 1.1 下个更大数字
 # 找到数组中下个比当前值大的数字
 # 给栈如果有大于当前的就pop得到当前最大值 往后继续记录
 from ArrayStack import ArrayStack
@@ -271,5 +271,54 @@ def nextGreat(nums):
     while len(stack) != 0:
         print(stack.pop(), ": -1")
 
+# 1.2 下个最大数字2
+# 循环数组 
+# 运行两遍就是看数组后面的值 重新与前面数值比较
+def nextGreat2(nums):
+    stack, r = [], [-1] * len(nums)
+    for i in range(len(nums)):
+        while stack and (nums[stack[-1]] < nums[i]):
+            r[stack.pop()] = nums[i]
+        stack.append(i)
+    print(r)
+    for i in range(len(nums)):
+        while stack and (nums[stack[-1]] < nums[i]):
+            r[stack.pop()] = nums[i]
+        if stack == []:
+            break
+    return r
 
+# 1.3 每日气温
+# 多少天后有更高温度
+# stack里面放tuple 第一个是温度 第二个是index
+def dailyTemperatures(temperatures):
+    if not temperatures: return []
+    result, stack = [0] * len(temperatures), []
+    stack.append((temperatures[0], 0))
+    for i in range(1, len(temperatures)):
+        while stack:
+            prev = stack[-1]
+            if prev[0] < temperatures[i]:
+                result[prev[1]] = i - prev[1]
+                stack.pop()
+            else:
+                break
+        stack.append((temperatures[i], i))
+    return result
+def dailyTemperatures2(temperatures):
+    if not temperatures: return []
+    result, stack = [0] * len(temperatures), []
+    stack.append(0)
+    for i in range(1, len(temperatures)):
+        while stack:
+            prev = stack[-1]
+            if temperatures[prev] < temperatures[i]:
+                result[prev] = i - prev
+                stack.pop()
+            else:
+                break
+        stack.append(i)
+    return result
 
+# 2 滑动窗口最大值
+# 三个相连数字的最大值 此时放到数组里面

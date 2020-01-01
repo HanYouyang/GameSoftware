@@ -16,6 +16,10 @@
 # 00000001 ; load 指令，用于把内存中的一个数字读到寄存器中
 # 00000010 ; add 指令
 # 00000011 ; save 指令，用手把寄存器的一个数字存到内存地址中
+# save_from_register
+# 这个指令需要使用两个寄存器
+# 把 a1 的值（这里是 0b11000011）写入 a2 表示的内存中
+# 这里 a2 中是 156，这个指令会把内存地址 156 中的值设置为 0b11000011
 # 00000100 ; compare 指令，用于比较 a1 a2 的大小并且保存结果到 c1
 # 00000101 ; jump_if_great 指令
 # 00000110 ; jump
@@ -85,6 +89,7 @@ class ASMdecode():
         return labelDict
     def machine_code(self):
         asmNew = self.clearAsm()
+        #print('asmNew', asmNew)
         labelDict = self.findLabelIndex()
         instructAction = {
             'jump': '00000110',
@@ -106,22 +111,20 @@ class ASMdecode():
 
         finaList = []
         for i in asmNew:
-
             if i in instructAction:
-                insAct = instructAction[i]
+                insAct = int(instructAction[i], 2)
                 finaList.append(insAct)
             elif i in registerLocation:
-                regLoc = registerLocation[i]
+                regLoc =  int(registerLocation[i], 2)
                 finaList.append(regLoc)
-
-            if i[: 6] == '@label':
+            elif i[: 6] == '@label':
                 labelIndex = labelDict[i]
-                strNumNow = str(bin(labelIndex)).replace('0b', '').zfill(8)  # 此处假设内存最大不会超过8位数的256，此时是label256
-                finaList.append(strNumNow)
+                finaList.append(labelIndex)
             elif i[0] == '@':
                 numLater = int(i[1:])
-                strNumNow = str(bin(numLater)).replace('0b', '').zfill(8)  # 此处假设内存最大不会超过8位数的256，此时是356
-                finaList.append(strNumNow)
+                finaList.append(numLater)
+            else:
+                finaList.append(int(i))
         return finaList
 
 if __name__ == '__main__':
