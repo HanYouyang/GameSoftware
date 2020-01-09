@@ -8,7 +8,6 @@ run 函数将 memory 数组视为内存，并且以地址 0 为起点执行这�
 注意，memory 目前只能支持 256 字节，因为 pa 寄存器只有 8 位
 '''
 from typing import List
-
 class RunVM():
     def __init__(self):
         self.memory = [
@@ -105,8 +104,6 @@ class RunVM():
         self.actionList = self.transAction()
         self.memAction = self.actionList[1: 156]
         self.memDone = self.actionList[156: 256]
-        # print('memAction now', memAction)
-        # print('memDone before', memDone)
         self.doList = self.doListGenr()
     def decodeByOri(self):
         machineMemory = []
@@ -131,11 +128,8 @@ class RunVM():
                 else:
                     ele = int(ele, 2)
                     realList.append(ele)
-        # print('realList', realList)
-        # print('len(realList)', len(realList))
         realList = realList + [0] * (256 - len(realList))
         return realList
-        # print('realList after', realList)
     def doListGenr(self):
         # 寄存器用字典保存值
         def doSet(a1, a2):
@@ -193,15 +187,14 @@ class RunVM():
             self.readLen -= 1
             # continue
         else:
-            print('ele now', ele)
+            # print('ele now', ele)
             do = self.doList[ele]
             ele1 = self.actionList[idx + 1]
             ele2 = self.actionList[idx + 2]
             ele3 = self.actionList[idx + 3]
             self.readLen = self.instruLen[ele]
-            print('self.readLen now', self.readLen)
-            print('do now', do)
-
+            # print('self.readLen now', self.readLen)
+            # print('do now', do)
             if self.readLen == 0:
                 do()
             elif self.readLen == 1:
@@ -211,50 +204,40 @@ class RunVM():
             elif self.readLen == 3:
                 do(ele1, ele2, ele3)
     def run(self, idx):
-        # self.readLen = 0
-        # for idx, ele in enumerate(self.actionList):
+        self.varAll['pa'] += 1
         if not self.actionList[idx]:
             return
         ele = self.actionList[idx]
         self.forBody(idx, ele)
-        return self.varAll
-
-# memory = memory + [0] * (256 - len(memory))
+        x = (int(self.varAll['a2']) - 156) % 10 * 5
+        y = math.floor((self.varAll['a2'] - 156) / 10) * 5
+        return x, y
+    def setColor(self):
+        colorA1 = bin(self.varAll['a1']).replace('0b', '')
+        rD = int(colorA1[0 : 2].zfill(8), 2)
+        r = rD * 85
+        gD = int(colorA1[2 : 4].zfill(8), 2)
+        g = gD * 85
+        bD = int(colorA1[4 : 6].zfill(8), 2)
+        b = bD * 85
+        return (r, g, b)
 
 import pygame
 import math
 def main():
-    vm = RunVM()
-    idx = 0
-    colotDict = {
-        '00': 0,
-        '01': 85,
-        '10': 170,
-        '11': 255,
-    }
-
     width, height = 500, 500
     screen = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
     running = True
     fps = 30
-    red = (255, 0, 0)
 
+    vm = RunVM()
+    idx = 0
     while running:
-        varAll = vm.run(idx)
-        idx += 1
-        x = (int(varAll['a2']) - 156) % 10 * 5
-        y = math.floor((varAll['a2'] - 156) / 10) * 5
-
-        colorA1 = bin(varAll['a1']).replace('0b', '')
-        rD = colorA1[0 : 2]
-        r = colotDict[rD]
-        gD = colorA1[2 : 4]
-        g = colotDict[gD]
-        bD = colorA1[4 : 6]
-        b = colotDict[bD]
-        colorNow = (r, g, b)
+        x, y = vm.run(idx)
+        colorNow = vm.setColor()
         pygame.draw.rect(screen, colorNow, (10 * x, 10 * y, 50, 50))
+        idx += 1
 
         pygame.display.flip()
         clock.tick(fps)
