@@ -62,3 +62,14 @@ axe8/factorial.a16
 @factorial 接受一个参数并返回它的阶乘，确保使用递归而不是循环来实现它
 注意，我的自动测试程序会加上我的调用代码并检查结果（我会修改前三个字节来跳转到我的测试代码）
 注意，你需要使用 .call .return 这两个伪指令来实现、测试函数
+
+
+;先写出阶乘递归
+def factorial(n):
+    if  2 > n:
+        return 1
+    else:
+        n_minus_1 = n - 1
+        t = factorial(n_minus_1)
+        t = multiply(t, n_minus_1)
+        return t
