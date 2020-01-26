@@ -1,0 +1,140 @@
+    jump @1024 
+    .memory 1024
+    set2 f1 3 
+    jump @factorial_end ; 注释非常多
+        @multiply
+            set2 a3 2                   ;设置步长为2
+
+            save_from_register2 a1 f1   ;设置f1位置的值为累加值final_a 此时f1指向的是原始f1+0
+            add2 f1 a3 f1               ;计算此时f1值
+            save_from_register2 a1 f1   ;设置f1位置的值为a1 此时f1指向的是f1+2
+            add2 f1 a3 f1               ;步进f1值
+            save_from_register2 a2 f1   ;设置f1位置的值为a2 此时f1指向的是f1+4
+            add2 f1 a3 f1               ;步进f1值
+            save_from_register2 a3 f1   ;设置f1位置的值为c即2 此时f1指向的是f1+6
+            add2 f1 a3 f1               ;步进f1值
+            save_from_register2 a3 f1   ;设置f1位置的值为final_c即2 此时f1指向的是f1+8
+
+            set2 a1 8                   ;不动a2和a3
+            subtract2 f1 a1 f1          ;复位f1
+
+            @while_multiply_start
+                compare a2 a3             ;比较a2（此时为原始比较值a2）和a3（此时为计数器c）
+                jump_if_less @while_multiply_end 
+
+
+                set2 a2 1                 ;设置计数器累加步长为1
+                add2 a3 a2 a3             ;计数器a3 + 1
+                set2 a2 8                 ;获得步进字节长度为2
+                add2 f1 a2 f1             ;f1 + 6位置此时用f1指向计数器c = 2
+                save_from_register2 a3 f1 ;存储计数器值到f1 + 8
+                                            ;c += 1 完成
+
+                ;最末位代表地址指向的内存位置值 是累加的
+                ;原始f1和原始f1 + 8应该是不变的
+                set2 a3 6                 
+                subtract2 f1 a3 f1        ;倒退f1 + 4长度4字节指向f1 + 2即原始参数a1
+                load_from_register2 f1 a2 ;拿到原始参数a1值即300
+                set2 a3 2                 ;获得步进字节数为6
+                subtract2 f1 a3 f1        ;倒退f1 + 2长度2字节指向f1即累加值
+                load_from_register2 f1 a1 ;拿到累加值存到a2
+                add2 a1 a2 a1             ;把原始参数a1累加到a2
+                save_from_register2 a1 f1 ;存储a2参数到此时指向的f1即累加位置
+                                            ;final_a += a完成
+                                            ;此时已经自动指回f1开始位置 还需要.return么？
+                
+                set2 a1 4
+                add2 f1 a1 f1
+                load_from_register2 f1 a2 ;拿回a2 此时f1指向f1 + 4
+                add2 f1 a1 f1
+                load_from_register2 f1 a3 ;拿回计数器 此时f1指向f1 + 8
+
+                set2 a1 8
+                subtract2 f1 a1 f1 ;回复第一圈开始位置为f1
+                    
+                jump @while_multiply_start
+            @while_multiply_end
+            
+            load_from_register2 f1 a1 
+
+            .return 0
+
+        @multiply_end    
+
+
+    @factorial
+        save_from_register2 a1 f1   ;设置f1位置的值为计数器n-1 此时f1指向的是原始f1+0
+        
+        set2 a3 1111 ;第一处标记
+        set2 a3 2
+        add2 f1 a3 f1
+        save_from_register2 a1 f1   ;设置f1位置的值为计数器n 此时f1指向的是原始f1+2
+        add2 f1 a3 f1
+        save_from_register2 a1 f1   ;设置f1位置的值为不变a1 此时f1指向的是原始f1+4
+        add2 f1 a3 f1
+        save_from_register2 a2 f1   ;设置f1位置的值为不变a2 此时f1指向的是原始f1+6
+        add2 f1 a3 f1
+        set2 a3 1
+        save_from_register2 a3 f1   ;设置f1位置的值为累乘器 此时f1指向的是原始f1+8
+
+        set2 a3 8                   
+        subtract2 f1 a3 f1          ;复位f1
+        
+            set2 a3 2222 ;标记开始循环之前
+            compare a1 a2           ;此时比较a1起点和a2重点的区别
+            jump_if_less @else_road
+            jump @more_than_final
+
+            @more_than_final
+            set2 a3 3333 ;标记循环开始
+            set2 a3 2
+            add2 f1 a3 f1
+            load_from_register2 f1 a1   ;从f1 + 2位置读取计数器值n
+            
+            set2 a3 2
+            subtract2 f1 a3 f1          ;回到f1 + 0位置
+            set2 a3 1
+            subtract2 a1 a3 a1
+            save_from_register2 a1 f1   ;用a3存储计数器n - 1到f1 + 0
+
+            set2 a3 6
+            add2 f1 a3 f1
+            load_from_register2 f1 a2   ;用a2拿到f1 + 6的终点值
+            subtract2 f1 a3 f1          ;复位到f1 + 0
+            set2 a3 4444 ;标记下个迭代开始之前
+            .call @factorial            ;进入n - 1和a2终点的迭代
+            set2 a3 5555 ;标记迭代逐渐结束
+
+            set2 a3 8
+            add2 f1 a3 f1
+            save_from_register2 a1 f1   ;把mutiply给出来的a1存到f1 + 8位置的累乘器
+
+            set2 a3 6
+            subtract2 f1 a3 f1
+            load_from_register2 f1 a2   ;用a2拿到此时n
+            subtract2 f1 a3 f1          ;复位到f1 + 0
+            set2 a3 6666 ;标记乘法开始前
+            
+            .call @multiply             ;参数a1是n 参数a2是f(n - 1)
+            set2 a3 7777 ;标记乘法结束
+            set2 a3 8
+            add2 f1 a3 f1               
+            save_from_register2 a1 f1   ;把mutiply给的a1存下来
+            subtract2 f1 a3 f1
+            set2 a3 8888 ;标记循环结束
+            
+            @else_road
+            set2 a3 9999 ;标记此时小于次数
+            set2 a3 8
+            add2 f1 a3 f1
+            load_from_register2 f1 a1   ;存累乘器的数字到f1 + 8
+            subtract2 f1 a3 f1          ;复位到f1 + 0
+            
+            .return 0
+        
+    @factorial_end
+
+    set2 a1 4           ;起点
+    set2 a2 2           ;终点
+    .call @factorial    ;用寄存器调用
+    halt

@@ -25,7 +25,7 @@ class X16asm():
             'subtract2':          3,
             '.memory':            1,
             '.return':            1,
-            '.call':              1,
+            '.call':              1, # 根据下面修改 因为提前调用了clearnote
         }
         self.regs = {
             'pa': '00000000',
@@ -93,7 +93,7 @@ class X16asm():
                 final_asm.append(e)
         # 重新拼成字符串
         final_asm = '\n'.join(final_asm)
-        print('final_asm', final_asm)
+        # print('final_asm', final_asm)
         return final_asm
 
     def fake_act_pre(self, asm_code):
@@ -104,17 +104,17 @@ class X16asm():
             if e == '':
                 continue
             e_sp = e.strip()
-            # print('e now', e)
             new_e = e_sp.split()
-            # print('new_e now', new_e)
-            if new_e[0] == '.call':
+            if new_e[0] == '.call':# 两个参数版本 目前就a1 a2两个寄存器没法调用三个参数
                 rep_func_name = new_e[1] # 模板字符串里面注释去掉 存在有影响
                 target_str = '''
                     set2 a3 14
                     add2 pa a3 a3
                     save_from_register2 a3 f1
+                    
                     set2 a3 2
                     add2 f1 a3 f1
+                    
                     jump {fun_name}
                 '''
                 final_str = target_str.format(fun_name = rep_func_name)
@@ -124,9 +124,11 @@ class X16asm():
                 rep_func_num = int(new_e[1])
                 target_str = '''
                     set2 a3 {fun_num}
+                    
+                    set2 a2 2
+                    add2 a2 a3 a3
                     subtract2 f1 a3 f1
-                    set2 a3 2
-                    subtract2 f1 a3 f1
+                    
                     load_from_register2 f1 a2
                     jump_from_register a2
                 '''
@@ -137,8 +139,8 @@ class X16asm():
             new_asm_code.append(e)
         final_str_muti_lines = '\n'.join(new_asm_code)
         # print('final_str_muti_lines now', final_str_muti_lines)
-
         return final_str_muti_lines
+
     def split_str_list(self, asm_code):
         asm_split_cut = asm_code.splitlines()
         asm_split = []
@@ -165,7 +167,7 @@ class X16asm():
         asm_code = self.clear_note(asm_code)
         asm_code = self.fake_act_pre(asm_code)
         asm_code = self.split_str_list(asm_code)
-        print('final list of asm_code', asm_code)
+        # print('final list of asm_code', asm_code)
         # 先去掉注释 再填充内容
         label_dict = self.label_dict_gen(asm_code)
 
@@ -183,7 +185,7 @@ class X16asm():
                     # 此处的标记位置举例就是function调用跳到此处调用 但是标记被删除
                     continue
                 act = e
-                print('act now', act)
+                # print('act now', act)
                 if act == 0:
                     continue
                 read_len = self.act_len[act]
@@ -235,6 +237,7 @@ class X16asm():
                 act_val = int(self.acts[act], 2)
                 reg1_val = int(self.regs[reg1], 2)
                 reg2_val = int(self.regs[reg2], 2)
+                # print('compare reg1_val and reg1_val now', reg1_val, reg2_val)
                 memory.append(act_val)
                 memory.append(reg1_val)
                 memory.append(reg2_val)
@@ -409,6 +412,7 @@ class X16asm():
 def machine_code(asm_code):
     x16asm = X16asm()
     memory = x16asm.second_code(asm_code)
+    print('final asm memory', memory)
     return memory
 if __name__ == '__main__':
     machine_code()

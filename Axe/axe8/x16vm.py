@@ -41,13 +41,13 @@ class X16vm():
             'halt':               0,
             'save_from_register': 2,
             'load_from_register': 2,
-            'jump_from_register': 1,# 存疑后面是几位
+            'jump_from_register': 1,  # 存疑后面是几位
             'jump_if_great':      2,
-            'jump_if_less':       2,# 此时是操作长度和读取长度不同
+            'jump_if_less':       2,  # 此时是操作长度和读取长度不同
             'jump':               2,
             'compare':            2,
-            'save':               3,# 用手把寄存器的一个数字存到内存地址中，注意这里的内存地址是一个 16 位的数字
-            'load':               3,# 改成16位2字节内存?? 还是改成2位
+            'save':               3,  # 用手把寄存器的一个数字存到内存地址中，注意这里的内存地址是一个 16 位的数字
+            'load':               3,  # 改成16位2字节内存?? 还是改成2位
             'add':                3,
             'set':                3,
             'set2':               3,
@@ -75,6 +75,8 @@ class X16vm():
 
         read_len = 0 # 每个操作读长 预先设置为0
         self.reg_num['pa'] = start
+        # v = mem_act[start]
+        # act = self.action[v]
         for i, e in enumerate(mem_act):
 
             if read_len > 0:
@@ -87,10 +89,9 @@ class X16vm():
                     v = mem_act[i]
                     act = self.action[v]
                     read_len = self.act_len[act]
-                    self.reg_num['pa'] = start + i + read_len + 1# read_len + 1  start + i +
+                    self.reg_num['pa'] = start + i + read_len + 1
                     print('act now', act)
-                    print('pa now', self.reg_num['pa'])
-
+                    # print('pa now', self.reg_num['pa'])
                 else:
                     print('mem_act[i] now', mem_act[i])
 
@@ -98,7 +99,6 @@ class X16vm():
                 reg_val = mem_act[i + 1]
                 reg = self.regs[reg_val]
                 v1 = mem_act[i + 2]
-                # v2 = mem_act[i + 3]
                 v2 = 0
                 value = self.get_memory_u16(v1, v2)
                 self.reg_num[reg] = value
@@ -109,6 +109,8 @@ class X16vm():
                 v2 = mem_act[i + 3]
                 value = self.get_memory_u16(v1, v2)
                 self.reg_num[reg] = value
+                # print('self.reg_num', self.reg_num)
+
             elif act == 'add':
                 reg_val_1 = mem_act[i + 1]
                 reg_val_2 = mem_act[i + 2]
@@ -121,6 +123,7 @@ class X16vm():
                 value = low1 + low2
                 low3, high3 = self.get_memory_u16(value)
                 self.reg_num[reg3] = low3
+                print('self.reg_num now', self.reg_num)
             elif act == 'add2':
                 reg_val_1 = mem_act[i + 1]
                 reg_val_2 = mem_act[i + 2]
@@ -204,7 +207,6 @@ class X16vm():
                 low = memory[mem_loc_1]
                 high = memory[mem_loc_2]
                 value_2 = self.get_memory_u16(low, high)
-
                 reg_val = mem_act[i + 3]
                 reg = self.regs[reg_val]
                 self.reg_num[reg] = value_2
@@ -229,9 +231,6 @@ class X16vm():
                 reg2 = self.regs[reg_val_2]
                 self.reg_num[reg2] = value_2
             elif act == 'load_from_register2':
-                # ; 下面的例子中，假设 a1 是 100，则会把内存地址 100 中的值读取到 a2 寄存器中
-                # ; 注意，这个指令读取 2 字节
-
                 # load_from_register2 a1 a2
                 # 把 a1 存放的内存地址的值，存到 a2 寄存器里
                 #  先取到 a1 的值，比如值是 777,
@@ -241,16 +240,16 @@ class X16vm():
                 reg_val_1 = mem_act[i + 1]
                 reg1 = self.regs[reg_val_1]
                 value_1 = self.reg_num[reg1] # 先取到 a1 的值
-                print('value_1 now', value_1)
                 mem_loc_1 = value_1
                 mem_loc_2 = value_1 + 1
-                print('mem_loc_1 and mem_loc_2 now', mem_loc_1, mem_loc_2)
                 low = memory[mem_loc_1]
                 high = memory[mem_loc_2]
+                print('low and high now', low, high)
                 value_2 = self.get_memory_u16(low, high)
                 reg_val_2 = mem_act[i + 2]
                 reg2 = self.regs[reg_val_2]
                 self.reg_num[reg2] = value_2
+                print('self.reg_num[reg2] now', self.reg_num[reg2])
             elif act == 'save_from_register2':
                 # save_from_register2 a3 f1
                 # 将 a3 寄存器里的值存到 f1 存放的内存地址里 先取到 a3 的值，
@@ -261,7 +260,6 @@ class X16vm():
                 reg1 = self.regs[reg_num_1]
                 reg_val_1 = self.reg_num[reg1] # 先取到 a3 的值
                 low, high = self.set_memory_u16(reg_val_1) # 拆成 高低位
-
                 reg_num_2 = mem_act[i + 2]
                 reg2 = self.regs[reg_num_2]
                 reg_val_2 = self.reg_num[reg2] # 取到 f1 的值
@@ -269,6 +267,7 @@ class X16vm():
                 mem_loc_2 = reg_val_2 + 1
                 memory[mem_loc_1] = low
                 memory[mem_loc_2] = high
+                print('memory low and high', low, high)
             elif act == 'compare': # ; 0 表示小于，1 表示相等，2 表示大于
                 reg_val_1 = mem_act[i + 1]
                 reg_val_2 = mem_act[i + 2]
@@ -287,8 +286,8 @@ class X16vm():
                 val = self.get_memory_u16(v1, v2)
                 jump_to_num = val
                 if  self.reg_num['c1'] == 0:
-                    return self.run(memory, jump_to_num)
-
+                    self.run(memory, jump_to_num)
+                    break
             elif act == 'jump': # 此处理解的是执行位置的内存也就是列表改变
                 v1 = mem_act[i + 1]
                 v2 = mem_act[i + 2]
@@ -296,17 +295,16 @@ class X16vm():
                 jump_to_num = val
                 self.run(memory, jump_to_num)
                 break
-
             elif act == 'jump_from_register': # 假设 a1 中存储的是 20，程序会跳转到 20
                 reg_val = mem_act[i + 1]
                 reg = self.regs[reg_val]
                 jump_to_num = self.reg_num[reg]
                 self.run(memory, jump_to_num)
                 break
-
             elif act == 'halt':
-                self.reg_num['pa'] -= 1 # 目前存疑只是为了计算暂时留下来
+                # self.reg_num['pa'] -= 1 # 目前存疑只是为了计算暂时留下来
                 break
+
 
         final_mem = memory
         return self.reg_num, final_mem

@@ -64,12 +64,122 @@ axe8/factorial.a16
 注意，你需要使用 .call .return 这两个伪指令来实现、测试函数
 
 
+
 ;先写出阶乘递归
-def factorial(n):
-    if  2 > n:
+def factorial(n1, n2):
+    if  n1 < n2:
         return 1
     else:
-        n_minus_1 = n - 1
-        t = factorial(n_minus_1)
-        t = multiply(t, n_minus_1)
-        return t
+        n = n1
+        n1 = n1 - 1
+        t = factorial(n1, n2)
+        final_t = t * n
+        return final_t
+
+
+
+
+def factorial(n):
+    if n <= 1:
+       sum = 1
+       return sum
+    else:
+       next = n - 1
+       a = factorial(next)
+       b = n
+       sum = a * b
+       return sum
+
+
+
+          jump @1024
+            .memory 1024
+            set2 f1 3
+            jump @function_end
+
+                ; 定义乘法函数
+            @function_multiply
+   
+
+            @function_factorial
+            set2 a3 10                  ; 一开始估计要用 5 个变量
+            add2 f1 a3 f1;
+
+            set2 a3 2                   ; 参数 n 存到 f1 - 2 代表的内存中
+            subtract2 f1 a3 a3
+            save_from_register2 a1 a3
+
+            set2 a1 1                   ; 假定函数返回结果一开始为 1
+            set2 a3 4                   ; 把结果存到 f1 - 4 代表的内存中
+            subtract2 f1 a3 a3
+            save_from_register2 a1 a3
+
+
+            set2 a3 2                   ; 把参数 n 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            set2 a2 2                   ; 参数 n 跟 2 比较大小
+            compare a1 a2               ;
+            jump_if_less @if_n_less_2
+            jump @else
+
+            @else
+            set2 a3 2                   ; 把参数 n 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            set2 a2 1                   ; 计算 n - 1
+            subtract2 a1 a2 a2
+            set2 a3 6                   ; 把 n - 1 的结果存到 f1 - 6 代表的内存中
+            subtract2 f1 a3 a3
+            save_from_register2 a2 a3
+
+            set2 a3 6                   ; 把 n - 1 读到 a1 寄存器
+            subtract2 f1 a3 a3          ; 并且当作参数传到 fac 里去
+            load_from_register2 a3 a1   ;
+            .call @function_factorial   ;
+
+            set2 a3 8                   ; 把 fac(n - 1) 的结果存到 f1 - 8 代表的内存中
+            subtract2 f1 a3 a3
+            save_from_register2 a1 a3
+
+            set2 a3 2                   ; 把参数 n 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            set2 a3 8                   ; 把 fac(n - 1) 读到 a2 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a2   ;
+
+            .call @function_multiply    ; 做乘法
+            set2 a3 4                   ; 把结果存到 f1 - 4 代表的内存中
+            subtract2 f1 a3 a3
+            save_from_register2 a1 a3
+
+            @if_n_less_2
+            set2 a3 4                   ; 把结果读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            .return 10
+            @function_end
+
+                ; 调用乘法函数
+            set2 a1 5
+
+            .call @function_factorial
+            halt
+
+
+
+def mutiply(a, b):
+    final_a = a     # 设定为f1最初指向的值
+    # 此时假定传入的是a = 300, b = 2
+    a = 300         # a1 设定为f1 + 2指向的值
+    b = 3           # a2
+    c = 2           # a3
+    while c <= b:   # jump_if_less
+        c += 1
+        final_a += a     
+    return final_a 
