@@ -1,3 +1,20 @@
+class Solution(object):
+    def num_man_min(self, n):
+        if ! n.is_num():
+            return False
+        if n % 2 != 0 or n < 0:
+            return False
+        
+        max_num = n % 2
+        if n % 4 != 0:
+            min_num = n % 4 + 1
+        else: 
+            min_num = n % 4
+        return max_num, min_num
+
+
+
+
 # 56.合并区间 = 5.10
 class Solution(object):
     def merge(self, intervals):

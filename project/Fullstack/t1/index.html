@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+    .container{
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    }
+    .main{
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    }
+    .main .article{
+    flex: 1;
+    background-color: yellowgreen;
+    }
+    .main .nav, .main .asdide{
+    background-color: beige;
+    }
+    .header, .footer{
+    background-color: green;
+    height: 20vh;
+    }
+
+    @media screen and (min-width: 300px){
+    .main{
+    flex-direction: row;
+    }
+    .main .nav, .main .asdide{
+    flex: 0 0 20vw;
+    }
+
+
+    }
+
+    </style>
+
+
+
+</head>
+<body>
+    
+
+    <div class="container">
+        <div class="header"> header</div>
+        <div class="main">
+            <div class="nav"> nav </div>
+            <div class="article"> article </div>
+            <div class="aside"> aside </div>
+        </div>
+        <div class="footer">footer</div>
+    </div>
+
+
+</body>
+</html>
