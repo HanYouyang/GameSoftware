@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>allowNodeStrokeColorVariation</key>
-	<true/>
+	<false/>
 	<key>backgroundColor</key>
-	<string>{0.999652, 0.991355, 0.662784, 1.000000}</string>
+	<string>{0.952941, 0.952941, 0.952941, 1.000000}</string>
 	<key>baseSubnode</key>
 	<dict>
 		<key>shapeStyle</key>
@@ -42,7 +42,7 @@
 			<key>color</key>
 			<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
 			<key>fontName</key>
-			<string>PingFangSC-Regular</string>
+			<string>AvenirNext-Regular</string>
 			<key>fontSize</key>
 			<real>21</real>
 			<key>italic</key>
@@ -64,7 +64,7 @@
 				<key>strokeStyle</key>
 				<dict>
 					<key>color</key>
-					<string>{0.686275, 0.313725, 0.784314, 1.000000}</string>
+					<string>{0.994095, 0.355207, 0.654882, 1.000000}</string>
 					<key>dash</key>
 					<integer>0</integer>
 					<key>width</key>
@@ -74,16 +74,20 @@
 			<key>titleStyle</key>
 			<dict>
 				<key>alignment</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>bold</key>
-				<false/>
+				<true/>
 				<key>color</key>
 				<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
 				<key>fontName</key>
-				<string>PingFangSC-Regular</string>
+				<string>Helvetica-Bold</string>
 				<key>fontSize</key>
 				<real>21</real>
 				<key>italic</key>
+				<false/>
+				<key>strikethrough</key>
+				<false/>
+				<key>underline</key>
 				<false/>
 			</dict>
 		</dict>
@@ -96,21 +100,21 @@
 				<key>borderStrokeStyle</key>
 				<dict>
 					<key>color</key>
-					<string>{0.693255, 0.037721, 0.183366, 1.000000}</string>
+					<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
 					<key>dash</key>
 					<integer>0</integer>
 					<key>width</key>
 					<real>6</real>
 				</dict>
 				<key>fillColor</key>
-				<string>{0.693255, 0.037721, 0.183366, 1.000000}</string>
+				<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
 				<key>shapeType</key>
 				<integer>2</integer>
 			</dict>
 			<key>strokeStyle</key>
 			<dict>
 				<key>color</key>
-				<string>{1.000000, 0.378145, 0.409603, 1.000000}</string>
+				<string>{0.994095, 0.355207, 0.654882, 1.000000}</string>
 				<key>dash</key>
 				<integer>0</integer>
 				<key>width</key>
@@ -123,9 +127,9 @@
 				<key>bold</key>
 				<true/>
 				<key>color</key>
-				<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
+				<string>{0.454902, 0.784314, 0.996078, 1.000000}</string>
 				<key>fontName</key>
-				<string>PingFangSC-Semibold</string>
+				<string>AvenirNext-Bold</string>
 				<key>fontSize</key>
 				<real>17</real>
 				<key>italic</key>
@@ -260,6 +264,50 @@
 			<dict>
 				<key>color</key>
 				<string>{1.000000, 0.588235, 0.352941, 1.000000}</string>
+			</dict>
+			<key>titleStyle</key>
+			<dict>
+				<key>color</key>
+				<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>shapeStyle</key>
+			<dict>
+				<key>borderStrokeStyle</key>
+				<dict>
+					<key>color</key>
+					<string>{1.000000, 0.378145, 0.409603, 1.000000}</string>
+				</dict>
+				<key>fillColor</key>
+				<string>{1.000000, 0.378145, 0.409603, 1.000000}</string>
+			</dict>
+			<key>strokeStyle</key>
+			<dict>
+				<key>color</key>
+				<string>{1.000000, 0.378145, 0.409603, 1.000000}</string>
+			</dict>
+			<key>titleStyle</key>
+			<dict>
+				<key>color</key>
+				<string>{1.000000, 1.000000, 1.000000, 1.000000}</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>shapeStyle</key>
+			<dict>
+				<key>borderStrokeStyle</key>
+				<dict>
+					<key>color</key>
+					<string>{0.994095, 0.355207, 0.654882, 1.000000}</string>
+				</dict>
+				<key>fillColor</key>
+				<string>{0.994095, 0.355207, 0.654882, 1.000000}</string>
+			</dict>
+			<key>strokeStyle</key>
+			<dict>
+				<key>color</key>
+				<string>{0.994095, 0.355207, 0.654882, 1.000000}</string>
 			</dict>
 			<key>titleStyle</key>
 			<dict>
