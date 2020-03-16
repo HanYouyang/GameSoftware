@@ -26,6 +26,10 @@
 #
 
 # 根据上面的资料，实现下面的函数
+
+
+
+
 class ASMdecode():
     def __init__(self):
         self.asm = """

@@ -265,6 +265,7 @@ def machine_code(asm_code):
     x16asm = X16asm()
     finalCode = x16asm.machine_code(asm_code)
     return finalCode
+
 if __name__ == '__main__':
     machine_code()
 
