@@ -13,7 +13,91 @@
 # （注意，py3.7 的 pygame 有 bug，怎么解决请 chat 中提问）
 #
 # 1，实现下面的函数，注意参数是 python3 type hinting 修饰的
-def run(memory: List[int]):
+
+class Axecpu():
+    def __init__(self, memory):
+        self.memory = memory
+        self.regs = {
+            'a1': 0,
+            'a2': 0,
+            'a3': 0,
+            'pa': 0,
+            'f1': 0,  # pa内存位置专用寄存器
+            'c1': 0,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+        }
+        self.regs_name = {
+            0: 'pa',
+            80: 'f1',
+            16: 'a1',
+            32: 'a2',
+            48: 'a3',
+            64: 'c1'
+        }
+        self.op_name = {
+            0: 'set',
+            1: 'load',
+            2: 'add',
+            3: 'save',
+            4: 'compare',
+            5: 'jump_if_less',
+            6: 'jump',
+            7: 'save_from_register',
+            8: 'set2',
+            9: 'load2',
+            10: 'add2',
+            11: 'save2',
+            12: 'subtract2',
+            13: 'load_from_register',
+            14: 'load_from_register2',
+            15: 'save_from_register2',
+            16: 'jump_from_register',
+            255: 'halt',
+        }
+        self.op_lens = {
+            # 这里就是对多少asm_code里面操作进行读取
+            # memory自己加入相应内容
+            # 但是label是一开始asm_code里面加入的
+            'halt': 0,
+            'save_from_register2': 2,  # 是用小端来存么
+            'save_from_register': 2,
+            'load_from_register2': 2,  # 这个寄存器应该几位不知
+            'load_from_register': 2,
+            'jump_from_register': 1,  # 存疑后面是几位
+            'jump_if_great': 1,
+            'jump_if_less': 1,
+            'jump': 1,
+            'compare': 2,
+            'save': 2,  # 用手把寄存器的一个数字存到内存地址中，注意这里的内存地址是一个 16 位的数字
+            'load': 2,  # 改成16位2字节内存
+            'add': 3,
+            'set': 2,
+            'set2': 2,
+            'load2': 2,
+            'add2': 3,  # 和substract2一样存疑 事实上得一个个改回来
+            'save2': 2,
+            'subtract2': 3,
+            '.memory': 1,
+            '.return': 1,
+            '.call': 1,  # 根据下面修改 因为提前调用了clearnote
+        }
+    def run(self):
+
+        pa = self.regs['pa']
+        op_num = self.memory[pa]
+        op = self.op_name[op_num]
+        if op == 'set': # 往下顺延此处获得数字
+            reg = self.memory[pa + 1]
+            reg_name = self.regs_name[reg]
+            value = self.memory[pa + 2]
+            self.regs[reg_name] = value
+
+        final_regs = self.regs
+        final_memory = self.memory
+        return final_regs, final_memory
+
+
+
+# def run(memory: List[int]):
     '''
     memory 是一个长度为 256 的数字数组，也就是作业 4 生成的机器码
     这是一个虚拟机程序
@@ -26,84 +110,9 @@ def run(memory: List[int]):
 
     注意，memory 目前只能支持 256 字节，因为 pa 寄存器只有 8 位
     '''
-    regs_num = {
-            'a1': 0,
-            'a2': 0,
-            'a3': 0,
-            'pa': 0,
-            'f1': 0,  # pa内存位置专用寄存器
-            'c1': 0,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
-        }
-    regs = {
-        0: 'pa',
-        80: 'f1',
-        16: 'a1',
-        32: 'a2',
-        48: 'a3',
-        64: 'c1'
-    }
-    op_name = {
-        0: 'set',
-        1: 'load',
-        2: 'add',
-        3: 'save',
-        4: 'compare',
-        5: 'jump_if_less',
-        6: 'jump',
-        7: 'save_from_register',
-        8: 'set2',
-        9: 'load2',
-        10: 'add2',
-        11: 'save2',
-        12: 'subtract2',
-        13: 'load_from_register',
-        14: 'load_from_register2',
-        15: 'save_from_register2',
-        16: 'jump_from_register',
-        255: 'halt',
-    }
-    op_lens = {
-        # 这里就是对多少asm_code里面操作进行读取
-        # memory自己加入相应内容
-        # 但是label是一开始asm_code里面加入的
-        'halt': 0,
-        'save_from_register2': 2,  # 是用小端来存么
-        'save_from_register': 2,
-        'load_from_register2': 2,  # 这个寄存器应该几位不知
-        'load_from_register': 2,
-        'jump_from_register': 1,  # 存疑后面是几位
-        'jump_if_great': 1,
-        'jump_if_less': 1,
-        'jump': 1,
-        'compare': 2,
-        'save': 2,  # 用手把寄存器的一个数字存到内存地址中，注意这里的内存地址是一个 16 位的数字
-        'load': 2,  # 改成16位2字节内存
-        'add': 3,
-        'set': 2,
-        'set2': 2,
-        'load2': 2,
-        'add2': 3,  # 和substract2一样存疑 事实上得一个个改回来
-        'save2': 2,
-        'subtract2': 3,
-        '.memory': 1,
-        '.return': 1,
-        '.call': 1,  # 根据下面修改 因为提前调用了clearnote
-    }
-    # memory = [0] * 256
-
-
-    while op_name[i] != 'halt':
-        i += op_lens[i] + 1
-        if op_name[i] == 'set':
 
 
 
-
-
-
-    final_regs = regs_num
-    final_memory = memory
-    return final_regs, final_memory
 #
 # 2，实现下面的功能
 # 让上面的虚拟机程序支持显示屏，显示屏的像素是 10x10

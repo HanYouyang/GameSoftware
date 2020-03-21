@@ -2,7 +2,7 @@
 # from . import machine_code_asm
 # 不能有__init__
 from asm_new import machine_code_asm
-from vm_new import run
+from vm_new import Axecpu
 
 def test_vm():
     # 此处注意split直接获得的是第一行要用for循环
@@ -15,7 +15,9 @@ def test_vm():
     0, 16, 1,
     ]
     output = machine_code_asm(asm)
-    vm_regs, vm_memory = run(output)
+    memory = output
+    cpu = Axecpu(memory)
+    vm_regs, vm_memory = cpu.run()
     expected_regs = {
             'a1': 1,
             # 'a2': '00100000',
@@ -25,7 +27,7 @@ def test_vm():
             # 'c1': '01000000',  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
         }
     assert expected == output, output
-    assert expected_regs == vm_regs, vm_regs
+    assert expected_regs['a1'] == vm_regs['a1'], vm_regs
 
   
 # def test9_comment():
