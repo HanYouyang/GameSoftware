@@ -14,7 +14,7 @@
 #
 # 1，实现下面的函数，注意参数是 python3 type hinting 修饰的
 
-class Axecpu():
+class Axecpu(object):
     def __init__(self, memory):
         self.memory = memory
         self.regs = {
@@ -80,37 +80,101 @@ class Axecpu():
             '.return': 1,
             '.call': 1,  # 根据下面修改 因为提前调用了clearnote
         }
+    def get_memory_u16(self, value1, value2):
+        low = value1
+        high = value2
+        value = (high << 8) + low
+        return value
+    def set_memory_u16(self, number: int):
+        low = number & 0xFF
+        high = (number >> 8) & 0xFF
+        return low, high
     def run(self):
+        while True:
+            pa = self.regs['pa']
+            print('pa now', pa)
+            op_num = self.memory[pa]
+            op = self.op_name[op_num]
 
-        pa = self.regs['pa']
-        op_num = self.memory[pa]
-        op = self.op_name[op_num]
-        if op == 'set': # 往下顺延此处获得数字
-            reg = self.memory[pa + 1]
-            reg_name = self.regs_name[reg]
-            value = self.memory[pa + 2]
-            self.regs[reg_name] = value
+            if op == 'halt':
+                break
+            elif op == 'set': # 往下顺延此处获得数字
+                reg = self.memory[pa + 1] # 获得a1名字
+                reg_name = self.regs_name[reg]
+                value = self.memory[pa + 2]
+                self.regs[reg_name] = value
+                self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'load': # 往下顺延此处获得数字
+                loc_num = self.memory[pa + 1]
+                value = self.memory[loc_num]
+                reg = self.memory[pa + 2] # 获得a1名字
+                reg_name = self.regs_name[reg]
+                self.regs[reg_name] = value
+                self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'add':
+                print('now add')
+                reg_1 = self.memory[pa + 1]
+                reg_2 = self.memory[pa + 2]
+                reg_3 = self.memory[pa + 3]
+                reg_1_name = self.regs_name[reg_1]
+                reg_2_name = self.regs_name[reg_2]
+                reg_3_name = self.regs_name[reg_3]
 
-        final_regs = self.regs
-        final_memory = self.memory
-        return final_regs, final_memory
+                reg_1_value = self.regs[reg_1_name]
+                reg_2_value = self.regs[reg_2_name]
+                reg_3_value = reg_1_value + reg_2_value
+                self.regs[reg_3_name] = reg_3_value
+                self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'save':  # 往下顺延此处获得数字
+                reg = self.memory[pa + 1]  # 获得a1名字
+                reg_name = self.regs_name[reg]
+                value = self.regs[reg_name]
+                loc_num = self.memory[pa + 2]
+                self.memory[loc_num] = value
+                self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'compare':
+                reg_1 = self.memory[pa + 1]
+                reg_1_name = self.regs_name[reg_1]
+                reg_1_value = self.regs[reg_1_name]
+                reg_2 = self.memory[pa + 2]
+                reg_2_name = self.regs_name[reg_2]
+                reg_2_value = self.regs[reg_2_name]
+                self.regs['c1'] = 1
+                #  0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+                if reg_2_value > reg_1_value:
+                    self.regs['c1'] = 0
+                elif reg_2_value < reg_1_value:
+                    self.regs['c1'] = 2
+                self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'jump': # 待验证
+                loc_num = self.memory[pa + 1]
+                self.regs['pa'] = loc_num
+            elif op == 'jump_if_less':  # 待验证
+                loc_num = self.memory[pa + 1]
+                if self.regs['c1'] == 2:
+                    self.regs['pa'] = loc_num
+                else:
+                    self.regs['pa'] += self.op_lens[op] + 1
+
+        return self.regs, self.memory
 
 
 
-# def run(memory: List[int]):
-    '''
-    memory 是一个长度为 256 的数字数组，也就是作业 4 生成的机器码
-    这是一个虚拟机程序
-
-    run 函数将 memory 数组视为内存，并且以地址 0 为起点执行这个内存
-    你需要用变量来模拟寄存器，模拟程序的执行
-
-    下方会给出一个用于测试的 memory 例子并更新在 #general
-    你现在可以用自己生成的内容来测试
-
-    注意，memory 目前只能支持 256 字节，因为 pa 寄存器只有 8 位
-    '''
-
+# def run(memory):
+#     '''
+#     memory 是一个长度为 256 的数字数组，也就是作业 4 生成的机器码
+#     这是一个虚拟机程序
+#
+#     run 函数将 memory 数组视为内存，并且以地址 0 为起点执行这个内存
+#     你需要用变量来模拟寄存器，模拟程序的执行
+#
+#     下方会给出一个用于测试的 memory 例子并更新在 #general
+#     你现在可以用自己生成的内容来测试
+#
+#     注意，memory 目前只能支持 256 字节，因为 pa 寄存器只有 8 位
+#     '''
+#     cpu = Axecpu(memory)
+#     cpu.run()
 
 
 #
@@ -185,7 +249,7 @@ class Axecpu():
 # 根据这个代码，实现上面作业的虚拟显示屏
 # import pygame
 # import random
-#
+# 
 # def main():
 # width, height = 100, 100
 # screen = pygame.display.set_mode((width, height))

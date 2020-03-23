@@ -4,30 +4,129 @@
 from asm_new import machine_code_asm
 from vm_new import Axecpu
 
-def test_vm():
+
+def test_16bit_add_load():
     # 此处注意split直接获得的是第一行要用for循环
     asm ='''
     ; 单行注释
     @label1
-    set a1 1 ; 行内注释
+    set a1 1111 ; 行内注释
+    save a1 @100 
+    set a2 2
+    @label2
+    add a1 a2 a1
+    load @100 a1
+    compare a1 a2
+    jump_if_less @label3
+    jump @label2 ; 不能和上边lab2放一起不然会位置相同
+    @label3
+    halt
     '''
     expected = [
-    0, 16, 1,
+    0, 16, 1111,
+    3, 16, 100,
+    0, 32, 2,
+    2, 16, 32, 16,
+    1, 100, 16,
+    4, 16, 32,
+    5, 23, 
+    6, 9,
+    255,
     ]
     output = machine_code_asm(asm)
-    memory = output
+    memory = output + [0] * 101
+    # print('memory now', memory) # 翻译出来的没有运行过，所以内部没有内容可以看到
     cpu = Axecpu(memory)
     vm_regs, vm_memory = cpu.run()
+    print('vm_memory now', vm_memory) # 此处是运行结束后的内容可以看到变化
     expected_regs = {
-            'a1': 1,
-            # 'a2': '00100000',
+            'a1': 1111,
+            # 'a2': 2,
             # 'a3': '00110000',
             # 'pa': '00000000',
             # 'f1': '01010000',  # pa内存位置专用寄存器
-            # 'c1': '01000000',  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+            'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
         }
     assert expected == output, output
-    assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+    # assert expected_regs['a2'] == vm_regs['a2'], vm_regs
+    # assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+    assert expected_regs['c1'] == vm_regs['c1'], vm_regs
+
+
+# def test_8bit_add_load():
+#     # 此处注意split直接获得的是第一行要用for循环
+#     asm ='''
+#     ; 单行注释
+#     @label1
+#     set a1 1111 ; 行内注释
+#     save a1 @100 
+#     set a2 2
+#     @label2
+#     add a1 a2 a1
+#     load @100 a1
+#     compare a1 a2
+#     jump_if_less @label3
+#     jump @label2 ; 不能和上边lab2放一起不然会位置相同
+#     @label3
+#     halt
+#     '''
+#     expected = [
+#     0, 16, 1111,
+#     3, 16, 100,
+#     0, 32, 2,
+#     2, 16, 32, 16,
+#     1, 100, 16,
+#     4, 16, 32,
+#     5, 23, 
+#     6, 9,
+#     255,
+#     ]
+#     output = machine_code_asm(asm)
+#     memory = output + [0] * 101
+#     # print('memory now', memory) # 翻译出来的没有运行过，所以内部没有内容可以看到
+#     cpu = Axecpu(memory)
+#     vm_regs, vm_memory = cpu.run()
+#     print('vm_memory now', vm_memory) # 此处是运行结束后的内容可以看到变化
+#     expected_regs = {
+#             'a1': 1111,
+#             # 'a2': 2,
+#             # 'a3': '00110000',
+#             # 'pa': '00000000',
+#             # 'f1': '01010000',  # pa内存位置专用寄存器
+#             'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+#         }
+#     assert expected == output, output
+#     # assert expected_regs['a2'] == vm_regs['a2'], vm_regs
+#     # assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+#     assert expected_regs['c1'] == vm_regs['c1'], vm_regs
+
+  
+
+
+# def test_vm():
+#     # 此处注意split直接获得的是第一行要用for循环
+#     asm ='''
+#     ; 单行注释
+#     @label1
+#     set a1 1 ; 行内注释
+#     '''
+#     expected = [
+#     0, 16, 1,
+#     ]
+#     output = machine_code_asm(asm)
+#     memory = output
+#     cpu = Axecpu(memory)
+#     vm_regs, vm_memory = cpu.run()
+#     expected_regs = {
+#             'a1': 1,
+#             # 'a2': '00100000',
+#             # 'a3': '00110000',
+#             # 'pa': '00000000',
+#             # 'f1': '01010000',  # pa内存位置专用寄存器
+#             # 'c1': '01000000',  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+#         }
+#     assert expected == output, output
+#     assert expected_regs['a1'] == vm_regs['a1'], vm_regs
 
   
 # def test9_comment():

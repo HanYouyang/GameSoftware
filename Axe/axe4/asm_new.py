@@ -64,7 +64,7 @@ def symble_table():
         'jump_from_register': '00010000',
         'save_from_register': '00000111',
         'load_from_register': '00001101',
-        'jump_if_great': '00000101',
+        'jump_if_less': '00000101',
         'jump': '00000110',
         'compare': '00000100',
         'save': '00000011',
@@ -116,7 +116,6 @@ def memory_address(code_1):
         return m
     except ValueError as e:
         return a
-
 def clear_notes(asm):
     lines = asm.split('\n')
     new_lines = ''''''
@@ -158,7 +157,7 @@ def machine_code_asm(asm):
         if code[0][:1] == '@':
             # 对上来就是单行的@label直接放到字典里面给出坐标记录
             label_dict[code[0][1:]] = op_len
-            print('memory now', memory)
+            # print('memory now', memory)
             print('label_dict now', label_dict)
             continue
 
@@ -205,7 +204,7 @@ def machine_code_asm(asm):
             memory.append(op_num)
             memory.append(r1)
             memory.append(r2)
-        elif op == 'jump_if_great':
+        elif op == 'jump_if_less':
             # 更改下面的内容是为了将label暂时存到memory中
             # 第二遍遍历再放进去
             address = memory_address(code[1])
@@ -217,6 +216,9 @@ def machine_code_asm(asm):
             # address = int(code[1][1:])
             memory.append(op_num)
             memory.append(address)
+        elif op == 'halt':
+            print('final now')
+            memory.append(255)
 
 
     for i, e in enumerate(memory):
