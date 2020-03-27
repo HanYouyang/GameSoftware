@@ -48,8 +48,7 @@
 # """
 # 根据上面的资料，实现下面的函数
 
-# class Asm():
-#
+
 def symble_table():
     regs = {
                 'pa': '00000000',
@@ -58,7 +57,7 @@ def symble_table():
                 'a2': '00100000',
                 'a3': '00110000',
                 'c1': '01000000',  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
-            }
+    }
     ops = {
         'halt': '11111111',
         'jump_from_register': '00010000',
@@ -208,17 +207,38 @@ def machine_code_asm(asm):
             # 更改下面的内容是为了将label暂时存到memory中
             # 第二遍遍历再放进去
             address = memory_address(code[1])
-            # address = int(code[1][1:])
             memory.append(op_num)
             memory.append(address)
         elif op == 'jump':
             address = memory_address(code[1])
-            # address = int(code[1][1:])
             memory.append(op_num)
             memory.append(address)
         elif op == 'halt':
             print('final now')
             memory.append(255)
+        elif op == 'load_from_register':
+            reg1 = code[1]
+            r1 = int(regs[reg1], 2)
+            reg2 = code[2]
+            r2 = int(regs[reg2], 2)
+            memory.append(op_num)
+            memory.append(r1)
+            memory.append(r2)
+        elif op == 'save_from_register':
+            reg1 = code[1]
+            r1 = int(regs[reg1], 2)
+            reg2 = code[2]
+            r2 = int(regs[reg2], 2)
+            memory.append(op_num)
+            memory.append(r1)
+            memory.append(r2)
+        elif op == 'jump_from_register':  # 假设 a1 中存储的是 20，程序会跳转到 20
+            reg1 = code[1]
+            r1 = int(regs[reg1], 2)
+            memory.append(op_num)
+            memory.append(r1)
+
+
 
 
     for i, e in enumerate(memory):

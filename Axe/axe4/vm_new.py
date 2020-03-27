@@ -95,11 +95,12 @@ class Axecpu(object):
             print('pa now', pa)
             op_num = self.memory[pa]
             op = self.op_name[op_num]
+            print('op now', op)
 
             if op == 'halt':
                 break
             elif op == 'set': # 往下顺延此处获得数字
-                reg = self.memory[pa + 1] # 获得a1名字
+                reg = self.memory[pa + 1] # 这里的paj就是上面没有变化的pa
                 reg_name = self.regs_name[reg]
                 value = self.memory[pa + 2]
                 self.regs[reg_name] = value
@@ -119,7 +120,6 @@ class Axecpu(object):
                 reg_1_name = self.regs_name[reg_1]
                 reg_2_name = self.regs_name[reg_2]
                 reg_3_name = self.regs_name[reg_3]
-
                 reg_1_value = self.regs[reg_1_name]
                 reg_2_value = self.regs[reg_2_name]
                 reg_3_value = reg_1_value + reg_2_value
@@ -146,15 +146,39 @@ class Axecpu(object):
                 elif reg_2_value < reg_1_value:
                     self.regs['c1'] = 2
                 self.regs['pa'] += self.op_lens[op] + 1
-            elif op == 'jump': # 待验证
+            elif op == 'jump':
                 loc_num = self.memory[pa + 1]
                 self.regs['pa'] = loc_num
-            elif op == 'jump_if_less':  # 待验证
+            elif op == 'jump_if_less':
                 loc_num = self.memory[pa + 1]
                 if self.regs['c1'] == 2:
                     self.regs['pa'] = loc_num
                 else:
                     self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'load_from_register':
+                reg_1 = self.memory[pa + 1]
+                reg_2 = self.memory[pa + 2]
+                reg_1_name = self.regs_name[reg_1]
+                reg_2_name = self.regs_name[reg_2]
+                reg_1_value = self.regs[reg_1_name]
+                self.regs[reg_2_name] = self.memory[reg_1_value]
+                self.regs['pa'] += self.op_lens[op] + 1
+            elif op == 'save_from_register':
+                self.regs['pa'] += self.op_lens[op] + 1
+                reg_1 = self.memory[pa + 1]
+                reg_2 = self.memory[pa + 2]
+                reg_1_name = self.regs_name[reg_1]
+                reg_2_name = self.regs_name[reg_2]
+                   reg_2_value = self.regs[reg_2_name]
+                self.memory[reg_2_value] = self.regs[reg_1_name]
+            elif op == 'jump_from_register':
+                reg_1 = self.memory[pa + 1]
+                reg_1_name = self.regs_name[reg_1]
+                reg_1_value = self.regs[reg_1_name]
+                self.regs['pa'] = reg_1_value
+
+
+
 
         return self.regs, self.memory
 
@@ -249,7 +273,7 @@ class Axecpu(object):
 # 根据这个代码，实现上面作业的虚拟显示屏
 # import pygame
 # import random
-# 
+#
 # def main():
 # width, height = 100, 100
 # screen = pygame.display.set_mode((width, height))
