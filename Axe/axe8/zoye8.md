@@ -183,3 +183,92 @@ def mutiply(a, b):
         c += 1
         final_a += a     
     return final_a 
+    
+    # 风行的解答
+    def test_function_multiply():
+        asm = """
+            jump @1024
+            .memory 1024
+            set2 f1 3
+            jump @function_end
+
+                ; 定义乘法函数
+            @function_multiply
+            set2 a3 8
+            add2 f1 a3 f1
+
+            set2 a3 2                   ; 参数 a 放到 f1 - 2 代表的内存中
+            subtract2 f1 a3 a3          ;
+            save_from_register2 a1 a3   ;
+
+            set2 a3 4                   ; 参数 b 放到 f1 - 4 代表的内存中
+            subtract2 f1 a3 a3          ;
+            save_from_register2 a2 a3   ;
+
+            set2 a1 0                   ; i = 0 用于 while 判断
+            set2 a3 6                   ; i 放到 f1 - 6 代表的内存中
+            subtract2 f1 a3 a3          ;
+            save_from_register2 a1 a3   ;
+
+            set2 a1 0                   ; 假定函数返回结果 result 一开始为 0
+            set2 a3 8                   ; result 放到 f1 - 8 代表的内存中
+            subtract2 f1 a3 a3          ;
+            save_from_register2 a1 a3   ;
+
+
+            @while_start                ; 循环开始
+            set2 a3 6                   ; 把 i 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            set2 a3 4                   ; 把 b 读到 a2 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a2   ;
+
+            compare a1 a2
+            jump_if_less @while_block
+            jump @while_end
+
+            @while_block
+            set2 a3 8                   ; 把 result 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            set2 a3 2                   ; 把参数 a 读到 a2 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a2   ;
+
+            add2 a1 a2 a1               ; result += a
+
+            set2 a3 8                   ; result 放到 f1 - 8 代表的内存中
+            subtract2 f1 a3 a3          ;
+            save_from_register2 a1 a3   ;
+
+            set2 a3 6                   ; 把 i 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            set2 a2 1
+            add2 a1 a2 a1               ; i += 1
+            set2 a3 6                   ; i 放到 f1 - 6 代表的内存中
+            subtract2 f1 a3 a3          ;
+            save_from_register2 a1 a3   ;
+
+            jump @while_start
+            @while_end
+
+            set2 a3 8                   ; 把 result 读到 a1 寄存器
+            subtract2 f1 a3 a3          ;
+            load_from_register2 a3 a1   ;
+
+            .return 8
+            @function_end
+
+                ; 调用乘法函数
+            set2 a1 100
+            set2 a2 3
+
+            .call @function_multiply
+            halt
+            
+            

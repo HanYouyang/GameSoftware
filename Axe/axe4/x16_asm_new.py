@@ -1,82 +1,3 @@
-# 根据本作业的描述，实现下面两个函数
-# x16asm.machine_code(asm_code: str)
-# x16vm.run(memory: List[int])
-#
-# jump @1024
-# ;
-# ; 从第四个字节开始，剩下的 1021 个字节都是我们的
-# ;
-# ;
-# ;
-# ;
-# ; 下面是内存 1024 开始的内容
-# ; 初始化 f1 寄存器，这是需要我们手动做的
-# set2 f1 3 ; 设置 f1 寄存器为 3，我们用这个寄存器里的内存地址来保存函数返回后应该跳转的地址
-# ;
-# ; 我们要在接下来的的内存存放函数定义，所以直接跳转到 @function_end 避免执行函数
-# jump @function_end
-# ;
-# ; 定义一个函数 function_multiply，接受两个参数，返回两个数的乘积
-# ; 参数通过 a1 a2 得到，返回值通过 a1 传给调用方
-# @function_multiply
-# set2 a3 2 ; 因为下面用 a2 < a3 做判断，所以 a3 从 2 开始
-# ; 我们需要在循环中把 a3 + 1，并且把 a1 累加
-# ; 由于我们只有 3 个通用寄存器可用，我们需要用 3 个内存来暂存 a1 a2 a3 的值
-# ; 因为我们现在是自主决定使用所有内存，所以我们可以手动指定使用的内存区域
-# ; 我们把 65534 65532 65530 这三个地址拿来存储 a1 a2 a3 的值
-# ; 我们先保存 a1
-# save2 a1 @65534
-# @while_start ; 循环开始
-# compare a2 a3 ;
-# jump_if_less @while_end ; 一旦 a2 小于 a2，就结束循环
-# ;
-# ; 把 a2 保存到 65532, 然后利用 a2 把 a3+1
-# save2 a2 @65532
-# set2 a2 1
-# add2 a3 a2 a3
-# ;
-# ; 把循环开始之前暂存的 a1 放到 a2 中然后累加到 a1
-# load2 @65534 a2
-# add2 a1 a2 a1
-# ;
-# ; 恢复 a2 的值并跳转到循环开始
-# load2 @65532 a2
-# jump @while_start
-# @while_end
-# ; 函数结束了，这时候 a1 存的就是 a1*a2 的值
-# ; f1 寄存器里面存储的是函数调用前的地址，我们让 f1-2，然后把它取出来, 然后返回
-# set2 a3 2
-# subtract2 f1 a3 f1
-# load_from_register2 f1 a2
-# jump_from_register a2
-# ;
-# ;
-# ; 所有函数定义结束的标记（但我们这个例子中，只有一个函数定义）
-# @function_end
-# ;
-# ;
-# ; 我们来调用前面的 multiply 函数
-# set2 a1 300 ; a1 是 300
-# set2 a2 10 ; a2 是 10
-# ; 保存 pa 到 f1 所表示的内存中
-# ; 请特别注意下面的写法
-# ; save_from_register2 长度是 3 字节
-# ; jump 长度是 3 字节
-# ; set2 add2 各自占用 4 字节
-# ; 所以我们用它们两句之前的 add2 来修正函数返回时候的正确地址(也就是 14)
-# ; cpu 读了 add2 这句后就会把 pa + 4（add2 占用 4 字节）
-# ; 然后才会执行 add2，所以执行 add2 这句的时候只需要把 pa + 6 就能指向 jump @function_multiply 的下一句
-# set2 a3 14
-# add2 pa a3 a3
-# save_from_register2 a3 f1 ; 3 字节
-# ; 保存后，要把 f1 的值 +2
-# set2 a3 2 ; 4 字节
-# add2 f1 a3 f1 ; 4 字节
-# ; 跳转到函数
-# jump @function_multiply ; 3 字节
-# ; 函数返回了，这里的 a1 就是我们想要的返回值
-# halt
-
 class Asmblerx16(object):
     def __init__(self):
         self.regs = {
@@ -166,6 +87,53 @@ class Asmblerx16(object):
             final_asm = new_lines
             return final_asm
 
+    def add_fake(self, asm):
+        asm_split = asm.splitlines()
+        # print('asm_split now', asm_split)
+        new_asm = []
+        for e in asm_split:
+            if e.strip() == '' or not len(e):
+                continue
+
+            ele = e.strip().split()
+            print('ele now', ele)
+            if ele[0] == '.call':  # 两个参数版本 目前就a1 a2两个寄存器没法调用三个参数
+                function_name = ele[1]  # 模板字符串里面注释去掉 存在有影响
+                call_replace_str = '''
+                    set2 a3 14
+                    add2 pa a3 a3
+                    save_from_register2 a3 f1
+
+                    set2 a3 2
+                    add2 f1 a3 f1
+
+                    jump {target_fun_name}
+                '''
+                final_str = call_replace_str.format(target_fun_name=function_name)
+                new_asm.append(final_str)
+                continue
+            elif ele[0] == '.return':
+                function_name = int(ele[1])
+                # 此处的a3负责目前写函数的时候开辟多少空间存值
+                # 如果开辟一个变量空间var a1 = 1 那么需要1,0 存储这个1也就是说
+                # 此处要开通两个位置的值
+                return_replace_str = '''
+                    set2 a3 {target_fun_name} 
+                    ;set2 a2 2
+                    ;add2 a2 a3 a3                    
+                    subtract2 f1 a3 f1
+                    load_from_register2 f1 a2
+                    jump_from_register a2
+                '''
+                final_str = return_replace_str.format(target_fun_name=function_name)
+                new_asm.append(final_str)
+                continue
+
+            new_asm.append(e)
+        final_str_muti_lines = '\n'.join(new_asm)
+        print('final_str_muti_lines now', final_str_muti_lines)
+        return final_str_muti_lines
+
     def machine_code_asm(self, asm):
         """
         asm 是汇编语言字符串
@@ -178,6 +146,7 @@ class Asmblerx16(object):
         op_len = 0 # 计算距离开始位置的偏移量，用以下面计算label
         label_dict = {}
         asm = self.clear_notes(asm)
+        asm = self.add_fake(asm)
         lines = asm.split('\n')# 注意按行分割不然后面只拿到第一行
         for line in lines:
 
