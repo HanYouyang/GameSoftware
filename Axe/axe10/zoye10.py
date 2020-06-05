@@ -81,6 +81,15 @@ draw是VM自动完成的，他会在刷新周期内检查显存有没有被更�
 
 
 
+https://axe3.zulip.kybmig.cc/#narrow/stream/34-a16/topic/.5B.E8.A7.A3.E5.86.B3.5D.E4.B8.8D.E7.9F.A5.E9.81.93.E5.A6.82.E4.BD.95.E6.8A.8Apygame.E7.9A.84.E7.82.B9.E5.87.BB.E4.BA.8B.E4.BB.B6.E5.92.8C.E6.B1.87.E7.BC.96.E4.BB.A3.E7.A0.81.E7.BB.93.E5.90.88.E8.B5.B7.E6.9D.A5
+pygame与内存结合的思路
+
+
+
+
+https://axe3.zulip.kybmig.cc/#narrow/stream/34-a16/topic/.5B.E8.AE.A8.E8.AE.BA.5D.E6.AD.A3.E7.A1.AE.E7.9A.84offset
+更新offset
+
 
 https://axe3.zulip.kybmig.cc/#narrow/stream/34-a16/topic/.5B.E5.B7.B2.E8.A7.A3.E5.86.B3.5D.E5.85.A8.E5.B1.80.E5.8F.98.E9.87.8F.E8.AE.BE.E8.AE.A1
 全局变量和局部变量待区分
@@ -91,6 +100,9 @@ cpu每执行多少次，就调用一次screen
 https://axe3.zulip.kybmig.cc/#narrow/stream/34-a16/topic/.5B.E6.8F.90.E9.97.AE.5D.E7.94.BB.E5.9B.BE.E5.A4.AA.E6.85.A2.E5.A6.82.E4.BD.95.E8.A7.A3.E5.86.B3
 画图的具体位置如何，要自己写一个screen出来
 
+https://axe3.zulip.kybmig.cc/#narrow/stream/34-a16/topic/.E8.A5.BF.E5.86.B3.E8.81.9A.E8.81.9A.E7.9A.84.E5.91.BD.E4.BB.A4.E8.A1.8C.E5.A4.8D.E5.88.BB.EF.BC.88.E5.B0.9D.E8.AF.95.E7.89.88.EF.BC.89
+加上.var .get .update几个指令
+并且和.super_call组合
 
 
 

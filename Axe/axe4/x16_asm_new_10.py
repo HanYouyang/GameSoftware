@@ -1,6 +1,59 @@
 class Asmblerx16(object):
     def __init__(self):
-        self.vars = {}
+        self.vars = {
+        }
+        # 下面的逻辑要跟return一起，用了多少个add位数就要返回多少位数
+        # 也要注意函数的调用得在声明之前
+        self.funcs = {
+            '@add': '''
+                @add
+                    .get_reg 0 a2
+                    .get_reg 2 a1
+                    add2 a1 a2 a1
+                    .return 4
+                ''',
+            '@multiply': '''
+                @multiply
+                    .get_reg 0 a2
+                    .get_reg 2 a1
+                    .expand_f1 6
+                    .save_local_var 6 a1
+                    ;获得可变a1也是最终返回值
+                    .save_local_var 4 a1
+                    ;获得不变a2
+                    .save_local_var 2 a2
+                    set2 a3 2
+                    save_from_register2 a3 f1
+            
+                    @while_start 
+                        ;拿到a2（代表n）和a3（代表2）比较大小
+                        .get_local_var 2 a2
+                        .get_local_var 0 a3
+                        compare a2 a3 
+                        jump_if_less @while_end
+                        
+                        ;对a3进行加和，此处是a3代表的2增大
+                        set2 a2 1
+                        add2 a3 a2 a3
+                        ;把a3存在f1栈顶
+                        save_from_register2 a3 f1 
+            
+                        ;获得原始a1的值，只是这里写作a2
+                        .get_local_var 6 a2
+                        ;获得可变的加和a1的值
+                        .get_local_var 4 a1
+                        add2 a1 a2 a1
+            
+                        ;及时保存可变a1的值到-4位置
+                        .save_local_var 4 a1
+            
+                        jump @while_start
+                    @while_end
+                    .get_local_var 4 a1        
+            
+                    .return 10 ;此处因为已经有4而局部又加了6
+                ''',
+        }
         self.regs = {
                 'pa': '00000000',
                 'f1': '01010000',  # pa内存位置专用寄存器
@@ -33,7 +86,6 @@ class Asmblerx16(object):
             'and': '00010011',
         }
         self.op_lens = {
-
                 'halt': 0,
                 'save_from_register2': 2,  # 是用小端来存么
                 'save_from_register': 2,
@@ -56,6 +108,8 @@ class Asmblerx16(object):
                 '.memory': 0,
                 '.return': 1,
                 '.call': 1,  # 根据下面修改 因为提前调用了clearnote
+                # '.super_call': 2, # 似乎不用加上
+                # '.var': 2,
                 'shift_right': 1,
                 'and': 3,
         }
@@ -70,7 +124,7 @@ class Asmblerx16(object):
         low = number & 0xFF
         high = (number >> 8) & 0xFF
         return low, high
-    #
+
     def memory_address(self, code_1):
             a = code_1[1:]
             print('a now', a)
@@ -93,7 +147,6 @@ class Asmblerx16(object):
 
     def add_fake(self, asm):
         asm_split = asm.splitlines()
-        # print('asm_split now', asm_split)
         new_asm = []
         for e in asm_split:
             if e.strip() == '' or not len(e):
@@ -118,281 +171,186 @@ class Asmblerx16(object):
                 new_asm.append(final_str)
                 continue
             elif ele[0] == '.return':
-                function_name = int(ele[1])
+                retur_nums = int(ele[1])
                 # 此处的a3负责目前写函数的时候开辟多少空间存值
                 # 如果开辟一个变量空间var a1 = 1 那么需要1,0 存储这个1也就是说
                 # 此处要开通两个位置的值
 
                 # 注意作业8需要注释2、3行，但是作业10不能注释掉
                 # 另外思路就是就是作业8后面return 8
-                return_replace_str = '''
-                    set2 a3 {target_fun_name} 
-                    set2 a2 2
-                    add2 a2 a3 a3                    
+                # return_replace_str = '''
+                #     set2 a3 {retur_space}
+                #     set2 a2 2
+                #     add2 a2 a3 a3
+                #     subtract2 f1 a3 f1
+                #     load_from_register2 f1 a2
+                #     jump_from_register a2
+                # '''
+                return_space_self_str = '''
+                    set2 a3 {retur_space}               
                     subtract2 f1 a3 f1
                     load_from_register2 f1 a2
                     jump_from_register a2
                 '''
-                final_str = return_replace_str.format(target_fun_name=function_name)
-                new_asm.append(final_str)
-                continue
-            elif ele[0] == '.call_multi_arg_nums':  # 两个参数版本 目前就a1 a2两个寄存器没法调用三个参数
-                function_name = ele[1]  # 模板字符串里面注释去掉 存在有影响
-                #现在测算后面有多少个数值
-                arg_ary = ele[2:]
-                len_arg = len(arg_ary)
-                print('arg_ary now', arg_ary)
-                print('len_arg now', len_arg)
-                updat_str = '''
-                        set2 a3 2
-                        add2 f1 a3 a3
-                    '''
-
-                for i in (0, len_arg - 1):
-                    if arg_ary[i].isdigit():
-                        set_str_format = '''
-                            set2 a2 {reg_value}
-                            save_from_register2 a2 a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(reg_value=int(arg_ary[i]))
-                        print('updat_str now', updat_str)
-
-                    else:
-                        print('arg_ary[i] now', arg_ary[i])
-                        set_str_format = '''
-                            save_from_register2 {x1} a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(x1=arg_ary[i])
-
-                    # 再每次的最后如果没有的话继续加上f1的两字节空间
-                    if i < len_arg - 1:
-                        add_more_space = '''
-                            set2 a2 2
-                            add2 a3 a2 a3
-                        '''
-                        # new_add_more_space = add_more_space.format(times=n_times)
-                        updat_str = updat_str + add_more_space
-                        # 现在是没有考虑又存变量又存多余其他设计的变量怎么办
-
-                call_replace_str = '''
-                    set2 a3 14
-                    add2 pa a3 a3
-                    save_from_register2 a3 f1
-
-                    set2 a3 4
-                    add2 f1 a3 f1
-
-                    jump {target_fun_name}
-                '''
-                replace_str = call_replace_str.format(target_fun_name=function_name)
-                final_str = updat_str + replace_str
-                print('final_str now', final_str)
-
-                new_asm.append(final_str)
-                continue
-            elif ele[0] == '.call_multi_arg_regs':  # 两个参数版本 目前就a1 a2两个寄存器没法调用三个参数
-                function_name = ele[1]  # 模板字符串里面注释去掉 存在有影响
-                #现在测算后面有多少个数值
-                arg_ary = ele[2:]
-                len_arg = len(arg_ary)
-                print('arg_ary now', arg_ary)
-                print('len_arg now', len_arg)
-                updat_str = '''
-                        set2 a3 2
-                        add2 f1 a3 a3
-                    '''
-
-                for i in (0, len_arg - 1):
-                    if arg_ary[i].isdigit():
-                        set_str_format = '''
-                            set2 a2 {reg_value}
-                            save_from_register2 a2 a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(reg_value=int(arg_ary[i]))
-                        print('updat_str now', updat_str)
-
-                    else:
-                        print('arg_ary[i] now', arg_ary[i])
-                        set_str_format = '''
-                            save_from_register2 {x1} a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(x1=arg_ary[i])
-
-                    # 再每次的最后如果没有的话继续加上f1的两字节空间
-                    if i < len_arg - 1:
-                        add_more_space = '''
-                            set2 {x1} 2
-                            add2 a3 {x1} a3
-                        '''
-                        # new_add_more_space = add_more_space.format(times=n_times)
-                        updat_str = updat_str + add_more_space.format(x1=arg_ary[i])
-                        # 现在是没有考虑又存变量又存多余其他设计的变量怎么办
-
-                call_replace_str = '''
-                    set2 a3 14
-                    add2 pa a3 a3
-                    save_from_register2 a3 f1
-
-                    set2 a3 4
-                    add2 f1 a3 f1
-
-                    jump {target_fun_name}
-                '''
-                replace_str = call_replace_str.format(target_fun_name=function_name)
-                final_str = updat_str + replace_str
-                print('final_str now', final_str)
-
-                new_asm.append(final_str)
-                continue
-            elif ele[0] == '.call_multi_arg_locs':  # 两个参数版本 目前就a1 a2两个寄存器没法调用三个参数
-                function_name = ele[1]  # 模板字符串里面注释去掉 存在有影响
-                #现在测算后面有多少个数值
-                arg_ary = ele[2:]
-                len_arg = len(arg_ary)
-                print('arg_ary now', arg_ary)
-                print('len_arg now', len_arg)
-                updat_str = '''
-                        set2 a3 2
-                        add2 f1 a3 a3
-                    '''
-
-                for i in (0, len_arg - 1):
-                    if arg_ary[i][0] == '@':
-                        print('arg_ary[i] now', arg_ary[i])
-                        set_str_format = '''
-                            load2 {x1} a2
-                            save_from_register2 a2 a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(x1=arg_ary[i])
-                    elif arg_ary[i].isdigit():
-                        set_str_format = '''
-                            set2 a2 {reg_value}
-                            save_from_register2 a2 a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(reg_value=int(arg_ary[i]))
-                        print('updat_str now', updat_str)
-
-                    else:
-                        print('arg_ary[i] now', arg_ary[i])
-                        set_str_format = '''
-                            save_from_register2 {x1} a3
-                        '''
-                        updat_str = updat_str + set_str_format.format(x1=arg_ary[i])
-
-
-                    # 再每次的最后如果没有的话继续加上f1的两字节空间
-                    if i < len_arg - 1:
-                        add_more_space = '''
-                            set2 a2 2
-                            add2 a3 a2 a3
-                        '''
-                        # new_add_more_space = add_more_space.format(times=n_times)
-                        updat_str = updat_str + add_more_space.format(x1=arg_ary[i])
-                        # 现在是没有考虑又存变量又存多余其他设计的变量怎么办
-
-                call_replace_str = '''
-                    set2 a3 14
-                    add2 pa a3 a3
-                    save_from_register2 a3 f1
-
-                    set2 a3 4
-                    add2 f1 a3 f1
-
-                    jump {target_fun_name}
-                '''
-                replace_str = call_replace_str.format(target_fun_name=function_name)
-                final_str = updat_str + replace_str
-                print('final_str now', final_str)
-
+                # final_str = return_replace_str.format(retur_space=retur_nums)
+                final_str = return_space_self_str.format(retur_space=retur_nums)
                 new_asm.append(final_str)
                 continue
             elif ele[0] == '.super_call':  # 两个参数版本 目前就a1 a2两个寄存器没法调用三个参数
                 function_name = ele[1]  # 模板字符串里面注释去掉 存在有影响
-                #现在测算后面有多少个数值
+                # 现在测算后面有多少个数值
                 arg_ary = ele[2:]
                 len_arg = len(arg_ary)
-                print('arg_ary now', arg_ary)
-                print('len_arg now', len_arg)
+                # print('arg_ary now', arg_ary)
+                # print('len_arg now', len_arg)
                 target_offset = 0
                 offset_str = '''
-                        set2 a3 {offset}
-                        add2 f1 a3 a3
-                    '''
+                    set2 a3 {offset}
+                    add2 f1 a3 a3
+                '''
                 updat_str = '''
-                    '''
-
-                for i in (0, len_arg - 1):
+                '''
+                add_more_space = '''
+                    set2 a2 2
+                    add2 a3 a2 a3
+                '''
+                add_more_regs_space = '''
+                    set2 {x1} 2
+                    add2 a3 {x1} a3
+                '''
+                for i in range(len_arg):
+                    # print('arg_ary[i] now', arg_ary[i])
                     target_offset += 1
                     real_offset = 2 * target_offset
                     updat_str = updat_str + offset_str.format(offset=real_offset)
-
                     if arg_ary[i][0] == '@':
-                        print('arg_ary[i] now', arg_ary[i])
-                        set_str_format = '''
+                        loc_str_format = '''
                             load2 {x1} a2
                             save_from_register2 a2 a3
                         '''
-                        updat_str = updat_str + set_str_format.format(x1=arg_ary[i])
+                        updat_str = updat_str + loc_str_format.format(x1=arg_ary[i])
                         if i < len_arg - 1:
-                            add_more_space = '''
-                                set2 a2 2
-                                add2 a3 a2 a3
-                            '''
                             updat_str = updat_str + add_more_space
                     elif arg_ary[i].isdigit():
-                        set_str_format = '''
+                        digit_str_format = '''
                             set2 a2 {reg_value}
                             save_from_register2 a2 a3
                         '''
-                        updat_str = updat_str + set_str_format.format(reg_value=int(arg_ary[i]))
-                        print('updat_str now', updat_str)
+                        updat_str = updat_str + digit_str_format.format(reg_value=int(arg_ary[i]))
                         if i < len_arg - 1:
-                            add_more_space = '''
-                                set2 a2 2
-                                add2 a3 a2 a3
-                            '''
-                            # new_add_more_space = add_more_space.format(times=n_times)
                             updat_str = updat_str + add_more_space
                             # 现在是没有考虑又存变量又存多余其他设计的变量怎么办
-
+                    elif arg_ary[i] in self.vars:
+                        var_str = '''
+                            set2 a2 {var_value}
+                            save_from_register2 a2 a3
+                        '''
+                        updat_str = updat_str + var_str.format(var_value=int(self.vars[arg_ary[i]]))
+                        if i < len_arg - 1:
+                            updat_str = updat_str + add_more_space
                     else:
-                        print('arg_ary[i] now', arg_ary[i])
-                        set_str_format = '''
+                        reg_str_format = '''
                             save_from_register2 {x1} a3
                         '''
-                        updat_str = updat_str + set_str_format.format(x1=arg_ary[i])
+                        updat_str = updat_str + reg_str_format.format(x1=arg_ary[i])
                         if i < len_arg - 1:
-                            add_more_space = '''
-                                set2 {x1} 2
-                                add2 a3 {x1} a3
-                            '''
-                            updat_str = updat_str + add_more_space.format(x1=arg_ary[i])
-
-
+                            updat_str = updat_str + add_more_regs_space.format(x1=arg_ary[i])
+                # call_replace_str = '''
+                #     ;此处是在存储f1的返回位置
+                #     set2 a3 14
+                #     add2 pa a3 a3
+                #     save_from_register2 a3 f1
+                #
+                #     ;此处是在存储f1之前的参数的位置
+                #     ;f1之前的位置是参数，f1之后理论上可以加上局部变量参数
+                #     ;布局应该和所谓的函数调用相关联
+                #     ;最终布局就是 参数 f1返回位置 局部变量
+                #     set2 a3 {offset}
+                #     add2 f1 a3 f1
+                #
+                #     jump {target_fun_name}
+                # '''
                 call_replace_str = '''
                     set2 a3 14
                     add2 pa a3 a3
                     save_from_register2 a3 f1
-
+                    
                     set2 a3 {offset}
                     add2 f1 a3 f1
-
+                    
                     jump {target_fun_name}
                 '''
                 replace_str = call_replace_str.format(offset=real_offset, target_fun_name=function_name)
 
                 final_str = updat_str + replace_str
-                print('final_str now', final_str)
-
+                # print('final_str now', final_str)
                 new_asm.append(final_str)
                 continue
+            elif ele[0] == '.func':
+                add_str = self.funcs[ele[1]]
+                # print('add_str', add_str)
+                new_asm.append(add_str)
+                continue
             elif ele[0] == '.var':
-                if ele[1] in
-
-
+                if ele[1] not in self.vars:
+                    self.vars[ele[1]] = int(ele[2]) # 此处要存上地址位置
+                    # print('self.vars', self.vars)
+                continue
+            elif ele[0] == '.update':
+                if ele[1] in self.vars:
+                    self.vars[ele[1]] = int(ele[2]) # 此处要存上地址位置
+                    # print('self.vars', self.vars)
+                continue
+            elif ele[0] == '.get':
+                if ele[1] in self.vars:
+                    get_str = '''
+                        set2 {var_to_reg} {var_value}
+                    '''
+                    get_updat_str = get_str.format(var_value=self.vars[ele[1]], var_to_reg=ele[2])
+                    # print('get_updat_str', get_updat_str)
+                new_asm.append(get_updat_str)
+                continue
+            elif ele[0] == '.get_reg':
+                get_str = '''
+                    set2 a3 {var_value}
+                    subtract2 f1 a3 a3
+                    load_from_register2 a3 {target_reg}
+                '''
+                get_updat_str = get_str.format(var_value=ele[1], target_reg=ele[2])
+                # print('get_updat_str', get_updat_str)
+                new_asm.append(get_updat_str)
+                continue
+            elif ele[0] == '.expand_f1':
+                get_str = '''
+                    set2 a3 {var_value}
+                    add2 f1 a3 f1
+                '''
+                get_updat_str = get_str.format(var_value=ele[1])
+                new_asm.append(get_updat_str)
+                continue
+            elif ele[0] == '.save_local_var':
+                get_str = '''
+                    set2 a3 {var_value}
+                    subtract2 f1 a3 a3
+                    save_from_register2 {target_reg} a3 
+                '''
+                get_updat_str = get_str.format(var_value=ele[1], target_reg=ele[2])
+                # print('get_updat_str', get_updat_str)
+                new_asm.append(get_updat_str)
+                continue
+            elif ele[0] == '.get_local_var':
+                get_str = '''
+                    set2 a3 {var_value}
+                    subtract2 f1 a3 a3
+                    load_from_register2 a3 {target_reg}  
+                '''
+                get_updat_str = get_str.format(var_value=ele[1], target_reg=ele[2])
+                # print('get_updat_str', get_updat_str)
+                new_asm.append(get_updat_str)
+                continue
             new_asm.append(e)
         final_str_muti_lines = '\n'.join(new_asm)
-        # print('final_str_muti_lines now', final_str_muti_lines)
+        print('final_str_muti_lines now', final_str_muti_lines)
         return final_str_muti_lines
 
     def machine_code_asm(self, asm):
