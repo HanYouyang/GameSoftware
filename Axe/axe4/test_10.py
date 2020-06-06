@@ -21,83 +21,10 @@ def set_memory_u16(number: int):
 #     ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
 
 #     jump @main
+#     .func @add
+#     .func @multiply
+#     .func @draw_point
 
-#     @add
-#         .expand_f1 2
-#         .get_reg 2 a2
-#         .get_reg 4 a1
-#         add2 a1 a2 a1
-#         .return 6
-    
-#     @multiply
-#         .expand_f1 2
-#         .get_reg 2 a2
-#         .get_reg 4 a1
-#         .expand_f1 8
-#         .save_local_var 6 a1
-#         ;获得可变a1也是最终返回值
-#         .save_local_var 4 a1
-#         ;获得不变a2
-#         .save_local_var 2 a2
-#         set2 a3 2
-#         save_from_register2 a3 f1
-
-#         @while_start 
-#             ;拿到a2（代表n）和a3（代表2）比较大小
-#             .get_local_var 2 a2
-#             .get_local_var 0 a3
-#             compare a2 a3 
-#             jump_if_less @while_end
-            
-#             ;对a3进行加和，此处是a3代表的2增大
-#             set2 a2 1
-#             add2 a3 a2 a3
-#             ;把a3存在f1栈顶
-#             save_from_register2 a3 f1 
-
-#             ;获得原始a1的值，只是这里写作a2
-#             .get_local_var 6 a2
-#             ;获得可变的加和a1的值
-#             .get_local_var 4 a1
-#             add2 a1 a2 a1
-
-#             ;及时保存可变a1的值到-4位置
-#             .save_local_var 4 a1
-
-#             jump @while_start
-#         @while_end
-#         .get_local_var 4 a1        
-
-#         .return 14 ;此处因为已经有4而局部又加了6
-
-#     @draw_point
-#         .expand_f1 2
-#         ;原先下边两个分别是4和2
-#         ;只是因为不可能使用a3寄存器
-#         ;再就是因为你里面除了已有的新建变量，还要调用函数
-#         ;为了调用函数所以必须使用一定隔离的手段
-#         ;尽管值的位置并没有改变
-#         .get_reg 4 a2
-#         .get_reg 6 a1
-
-#         ;此处暂定空间是10*10
-#         .get_reg 6 a1;目的是获得a1得到值
-#         set2 a2 10;此处在不改动mutiply时候先把a2设置为10
-#         .super_call @multiply a1 a2
-#         ;此时获得的a1是需要的值
-#         ;还需要a2值进行加和
-#         .get_reg 4 a2
-#         .super_call @add a1 a2
-#         ;此时a1的值是计算总的值
-#         ;还需要给出具体的偏移量
-#         .super_call @add a1 3
-#         ;此时是从jump后面的第三位开始计算总的便宜值
-
-#         set2 a2 3777
-#         .get_reg 2 a2
-#         ;此时需要给出颜色，先默认是111是红色
-#         save_from_register2 a2 a1;此时需要给出颜色，先默认是111是红色
-#         .return 8
 
 #     @main
 #     .super_call @draw_point 3 5 233
@@ -131,10 +58,7 @@ def set_memory_u16(number: int):
 #     # assert expected_regs['a1'] == vm_regs['a1'], vm_regs
 #     assert vm_memory[38] == 233, vm_memory[38]
 
-
-
-
-def test_rewrite_muti():
+def test_rewrite_factorial():
     asm ='''
     jump @2048
     .memory 2048;确保空间打开这么多长度
@@ -143,48 +67,14 @@ def test_rewrite_muti():
     ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
 
     jump @main
-       
-    @multiply
-        .expand_f1 2
-        .get_reg 4 a1
-        .expand_f1 4
-        ;获得可变a1也是最终返回值
-        .save_local_var 4 a1
-        set2 a2 2
-        .save_local_var 2 a2
+    .func @multiply
+    .func @factorial
 
-        @while_start 
-            ;拿到a2（代表n）和a1（代表2）比较大小
-            .get_reg 6 a2
-            .get_reg 2 a1
-            compare a2 a1 
-            jump_if_less @while_end
-            
-            ;对a3进行加和，此处是a3代表的2增大
-            set2 a2 1
-            add2 a1 a2 a1
-            ;把a3存在f1栈顶
-            .save_local_var 2 a1
-            ;save_from_register2 a3 f1 
-
-            ;获得原始a1的值，只是这里写作a2
-            .get_local_var 8 a2
-            ;获得可变的加和a1的值
-            .get_local_var 4 a1
-            add2 a1 a2 a1
-
-            ;及时保存可变a1的值到-4位置
-            .save_local_var 4 a1
-
-            jump @while_start
-        @while_end
-        .get_local_var 4 a1        
-
-        .return 10 ;此处因为已经有4而局部又加了6
-
+    
 
     @main
-    .super_call @multiply 10 5
+    ;函数计算的时候是左闭右开
+    .super_call @factorial 5 2
     halt
     '''
     asmbeler = Asmblerx16()
@@ -212,6 +102,83 @@ def test_rewrite_muti():
     }
     # assert expected_xijt == output, output
     assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+    
+
+
+# def test_rewrite_muti():
+#     asm ='''
+#     jump @2048
+#     .memory 2048;确保空间打开这么多长度
+#     ;从3到1026的内存全部都是屏幕大小的
+#     set2 f1 1027;栈内存开始点，但是配合第一行得1024+3
+#     ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
+
+#     jump @main
+       
+#     @multiply
+#         .expand_f1 6
+#         .get_local 8 a1
+#         ;获得可变a1也是最终返回值
+#         .save_local 4 a1
+#         set2 a2 2
+#         .save_local 2 a2
+
+#         @while_start 
+#             ;拿到a2（代表n）和a1（代表2）比较大小
+#             .get_local 6 a2
+#             .get_local 2 a1
+#             compare a2 a1 
+#             jump_if_less @while_end
+            
+#             ;对a1进行加和，此处是a1代表的2增大为后续的3、4、5、6
+#             set2 a2 1
+#             add2 a1 a2 a1
+#             ;把a3存在f1栈顶
+#             .save_local 2 a1
+
+#             ;获得原始a1的值，只是这里写作a2
+#             .get_local 8 a2
+#             ;获得可变的加和a1的值
+#             .get_local 4 a1
+#             add2 a1 a2 a1
+
+#             ;及时保存可变a1的值到-4位置
+#             .save_local 4 a1
+
+#             jump @while_start
+#         @while_end
+#         .get_local 4 a1        
+#         .return 10 ;此处因为已经有4而局部又加了6
+
+#     @main
+#     .super_call @multiply 10 5
+#     halt
+#     '''
+#     asmbeler = Asmblerx16()
+#     output = asmbeler.machine_code_asm(asm)
+#     # print('len of out put now', len(output))
+#     memory = output + [0] * 2048
+#     cpu = Axecpux16(memory)
+#     vm_regs, vm_memory = cpu.run()
+#     # print('vm_memory now', vm_memory) # 此处是运行结束后的内容可以看到变化
+#     # print('vm_regs now', vm_regs) # 此处是运行结束后的内容可以看到变化
+    
+#     # screen_ori = Screen16(memory, runable = True)
+#     # screen_aft = Screen16(vm_memory, runable = True)
+#     # screen_ori.run_test()
+#     # screen_aft.run_test()
+
+    
+#     expected_regs = {
+#         'a1': 674,
+#         # 'a2': 20,
+#         # 'a3': 20,
+#         # 'pa': '00000000',
+#         # 'f1': '01010000',  # pa内存位置专用寄存器
+#         # 'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+#     }
+#     # assert expected_xijt == output, output
+#     assert expected_regs['a1'] == vm_regs['a1'], vm_regs
     
 
 

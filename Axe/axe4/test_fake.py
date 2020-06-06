@@ -71,59 +71,59 @@
 #             .return 6 ;里面之前有一个+2的过程这里去掉了
             
 
-#     @function_factorial
-#         save_from_register2 a3 f1 ;此处存储乘积值到这里，但是开始的乘积值就是输入的1
-#                                   ;存储a1原始值 此处-6位默认
-#         set2 a3 2 ; 因为下面用 a2 < a3 做判断，所以 a3 从 2 开始
-#         ;有几个add2 最后返回几
-#         add2 f1 a3 f1
-#         save_from_register2 a1 f1 ;存储a1原始值 此处-4位默认
-#         add2 f1 a3 f1
-#         save_from_register2 a2 f1 ;存储a2原始值 此处-2位默认
-#         add2 f1 a3 f1
-#         set2 a3 1
-#         subtract2 a1 a3 a1 
-#         save_from_register2 a1 f1 ;存储a1-1即此时的n-1 此处0位默认
+    # @function_factorial
+    #     save_from_register2 a3 f1 ;此处存储乘积值到这里，但是开始的乘积值就是输入的1
+    #                               ;存储a1原始值 此处-6位默认
+    #     set2 a3 2 ; 因为下面用 a2 < a3 做判断，所以 a3 从 2 开始
+    #     ;有几个add2 最后返回几
+    #     add2 f1 a3 f1
+    #     save_from_register2 a1 f1 ;存储a1原始值 此处-4位默认
+    #     add2 f1 a3 f1
+    #     save_from_register2 a2 f1 ;存储a2原始值 此处-2位默认
+    #     add2 f1 a3 f1
+    #     set2 a3 1
+    #     subtract2 a1 a3 a1 
+    #     save_from_register2 a1 f1 ;存储a1-1即此时的n-1 此处0位默认
      
-#         ;此处获得此时的a1 与 a2终止点比较
-#         set2 a3 4
-#         subtract2 f1 a3 a3
-#         load_from_register2 a3 a1 ;拿到a1原始值
-#         compare a1 a2
-#         jump_if_less @if
-#         @else
-#         set2 a3 0
-#         subtract2 f1 a3 a3
-#         load_from_register2 a3 a1 ;拿到a1-1即n-1
-#         ;此时a2没变化
-#         set2 a3 6
-#         subtract2 f1 a3 a3
-#         load_from_register2 a3 a3 ;拿到此时的a3
-#         .call @function_factorial
+    #     ;此处获得此时的a1 与 a2终止点比较
+    #     set2 a3 4
+    #     subtract2 f1 a3 a3
+    #     load_from_register2 a3 a1 ;拿到a1原始值
+    #     compare a1 a2
+    #     jump_if_less @if
+    #     @else
+    #     set2 a3 0
+    #     subtract2 f1 a3 a3
+    #     load_from_register2 a3 a1 ;拿到a1-1即n-1
+    #     ;此时a2没变化
+    #     set2 a3 6
+    #     subtract2 f1 a3 a3
+    #     load_from_register2 a3 a3 ;拿到此时的a3
+    #     .call @function_factorial
 
-#         ;此时已经拿到a1
-#         ;也已经拿到 a2 是当下上面那个值？还是继续创造
-#         set2 a3 4
-#         subtract2 f1 a3 a3
-#         load_from_register2 a3 a2 ;拿到此时的a1原始值即n存到a2里面
-#         .call @function_multiply
-#         set2 a3 6
-#         subtract2 f1 a3 a3
-#         save_from_register2 a1 a3 ;存储此时a1中的乘积值到最开始的位置即默认a3位置
-#         .return 6
+    #     ;此时已经拿到a1
+    #     ;也已经拿到 a2 是当下上面那个值？还是继续创造
+    #     set2 a3 4
+    #     subtract2 f1 a3 a3
+    #     load_from_register2 a3 a2 ;拿到此时的a1原始值即n存到a2里面
+    #     .call @function_multiply
+    #     set2 a3 6
+    #     subtract2 f1 a3 a3
+    #     save_from_register2 a1 a3 ;存储此时a1中的乘积值到最开始的位置即默认a3位置
+    #     .return 6
 
-#         @if
-#         set2 a1 1
-#         set2 a3 6
-#         subtract2 f1 a3 a3
-#         save_from_register2 a1 a3 ;存储此时a1中的1到a3位置
-#         .return 6
+    #     @if
+    #     set2 a1 1
+    #     set2 a3 6
+    #     subtract2 f1 a3 a3
+    #     save_from_register2 a1 a3 ;存储此时a1中的1到a3位置
+    #     .return 6
     
-#     @function_end
-#     set2 a1 5   ; a1 是 5
-#     set2 a2 1   ; a2 是 阶乘的终止点
-#     set2 a3 1
-#     .call @function_factorial
+    # @function_end
+    # set2 a1 5   ; a1 是 5
+    # set2 a2 1   ; a2 是 阶乘的终止点
+    # set2 a3 1
+    # .call @function_factorial
 #     halt
 #     '''
 #     asmbeler = Asmblerx16()

@@ -1,58 +1,129 @@
 class Asmblerx16(object):
     def __init__(self):
         self.vars = {
+            'has_func':0,
         }
         # 下面的逻辑要跟return一起，用了多少个add位数就要返回多少位数
         # 也要注意函数的调用得在声明之前
         self.funcs = {
+            '@draw_point': '''
+                @draw_point
+                    .expand_f1 2
+                    ;原先下边两个分别是4和2
+                    ;只是因为不可能使用a3寄存器
+                    ;再就是因为你里面除了已有的新建变量，还要调用函数
+                    ;为了调用函数所以必须使用一定隔离的手段
+                    ;尽管值的位置并没有改变
+                    .get_local 4 a2
+                    .get_local 6 a1
+            
+                    ;此处暂定空间是10*10
+                    .get_local 6 a1;目的是获得a1得到值
+                    set2 a2 10;此处在不改动mutiply时候先把a2设置为10
+                    .super_call @multiply a1 a2
+                    ;此时获得的a1是需要的值
+                    ;还需要a2值进行加和
+                    .get_local 4 a2
+                    .super_call @add a1 a2
+                    ;此时a1的值是计算总的值
+                    ;还需要给出具体的偏移量
+                    .super_call @add a1 3
+                    ;此时是从jump后面的第三位开始计算总的便宜值
+            
+                    set2 a2 3777
+                    .get_local 2 a2
+                    ;此时需要给出颜色，先默认是111是红色
+                    save_from_register2 a2 a1;此时需要给出颜色，先默认是111是红色
+                    .return 8
+                ''',
             '@add': '''
                 @add
-                    .get_reg 0 a2
-                    .get_reg 2 a1
+                    .expand_f1 2
+                    .get_local 2 a2
+                    .get_local 4 a1
                     add2 a1 a2 a1
-                    .return 4
+                    .return 6
                 ''',
             '@multiply': '''
                 @multiply
-                    .get_reg 0 a2
-                    .get_reg 2 a1
                     .expand_f1 6
-                    .save_local_var 6 a1
+                    .get_local 8 a1
                     ;获得可变a1也是最终返回值
-                    .save_local_var 4 a1
-                    ;获得不变a2
-                    .save_local_var 2 a2
-                    set2 a3 2
-                    save_from_register2 a3 f1
+                    .save_local 4 a1
+                    set2 a2 2
+                    .save_local 2 a2
             
                     @while_start 
-                        ;拿到a2（代表n）和a3（代表2）比较大小
-                        .get_local_var 2 a2
-                        .get_local_var 0 a3
-                        compare a2 a3 
+                        ;拿到a2（代表n）和a1（代表2）比较大小
+                        .get_local 6 a2
+                        .get_local 2 a1
+                        compare a2 a1 
                         jump_if_less @while_end
                         
-                        ;对a3进行加和，此处是a3代表的2增大
+                        ;对a1进行加和，此处是a1代表的2增大为后续的3、4、5、6
                         set2 a2 1
-                        add2 a3 a2 a3
+                        add2 a1 a2 a1
                         ;把a3存在f1栈顶
-                        save_from_register2 a3 f1 
+                        .save_local 2 a1
             
                         ;获得原始a1的值，只是这里写作a2
-                        .get_local_var 6 a2
+                        .get_local 8 a2
                         ;获得可变的加和a1的值
-                        .get_local_var 4 a1
+                        .get_local 4 a1
                         add2 a1 a2 a1
             
                         ;及时保存可变a1的值到-4位置
-                        .save_local_var 4 a1
+                        .save_local 4 a1
             
                         jump @while_start
                     @while_end
-                    .get_local_var 4 a1        
-            
+                    .get_local 4 a1        
                     .return 10 ;此处因为已经有4而局部又加了6
+
                 ''',
+            '@factorial': '''
+                @factorial
+                    .expand_f1 6
+                    set2 a2 1       ;此处存储乘积值到这里，但是开始的乘积值就是输入的1
+                    .save_local 4 a2 
+            
+                    .get_local 8 a1                    
+                    set2 a2 1       
+                    subtract2 a1 a2 a1
+                    ;此处获得的是当前栈空间的a1 - 1 
+                    .save_local 2 a1 
+                 
+                    ;此处获得此时的a1 与 a2终止点比较
+                    ;此处获得的是当前栈空间的原始终止点a2
+                    .get_local 6 a2
+                    ;此处获得的是当前栈空间的当前栈空间的a1 - 1 
+                    .get_local 2 a1
+                    compare a1 a2
+                    jump_if_less @if
+            
+                    @else
+                    ;此时需要拿到 a1 - 1和a2继续传到里面去 
+                    ;拿到a1-1即n-1
+                    .get_local 2 a1
+                    ;此时a2没变化
+                    .get_local 6 a2
+                    .super_call @factorial a1 a2
+            
+                    ;此时已经拿到a1
+                    ;拿到当前栈a1原始值即n存到a2里面
+                    .get_local 8 a2
+                    .super_call @multiply a1 a2 
+            
+                    ;此时存储累乘到原始位置
+                    .save_local 4 a1
+                    .return 10
+            
+                    @if
+                    ;存储此时a1中的1到a3位置
+                    set2 a1 1
+                    .save_local 2 a1
+                    .return 10
+                        ''',
         }
         self.regs = {
                 'pa': '00000000',
@@ -237,9 +308,10 @@ class Asmblerx16(object):
                             save_from_register2 a2 a3
                         '''
                         updat_str = updat_str + digit_str_format.format(reg_value=int(arg_ary[i]))
-                        if i < len_arg - 1:
-                            updat_str = updat_str + add_more_space
+                        # if i < len_arg - 1:
+                        #     updat_str = updat_str + add_more_space
                             # 现在是没有考虑又存变量又存多余其他设计的变量怎么办
+                        updat_str = updat_str + add_more_space
                     elif arg_ary[i] in self.vars:
                         var_str = '''
                             set2 a2 {var_value}
@@ -255,26 +327,16 @@ class Asmblerx16(object):
                         updat_str = updat_str + reg_str_format.format(x1=arg_ary[i])
                         if i < len_arg - 1:
                             updat_str = updat_str + add_more_regs_space.format(x1=arg_ary[i])
-                # call_replace_str = '''
-                #     ;此处是在存储f1的返回位置
-                #     set2 a3 14
-                #     add2 pa a3 a3
-                #     save_from_register2 a3 f1
-                #
-                #     ;此处是在存储f1之前的参数的位置
-                #     ;f1之前的位置是参数，f1之后理论上可以加上局部变量参数
-                #     ;布局应该和所谓的函数调用相关联
-                #     ;最终布局就是 参数 f1返回位置 局部变量
-                #     set2 a3 {offset}
-                #     add2 f1 a3 f1
-                #
-                #     jump {target_fun_name}
-                # '''
                 call_replace_str = '''
+                    ;此处是在存储f1的返回位置
                     set2 a3 14
                     add2 pa a3 a3
                     save_from_register2 a3 f1
                     
+                    ;此处是在存储f1之前的参数的位置
+                    ;f1之前的位置是参数，f1之后理论上可以加上局部变量参数
+                    ;布局应该和所谓的函数调用相关联
+                    ;最终布局就是 参数 f1返回位置 局部变量
                     set2 a3 {offset}
                     add2 f1 a3 f1
                     
@@ -287,6 +349,7 @@ class Asmblerx16(object):
                 new_asm.append(final_str)
                 continue
             elif ele[0] == '.func':
+                self.vars['has_func'] = 1
                 add_str = self.funcs[ele[1]]
                 # print('add_str', add_str)
                 new_asm.append(add_str)
@@ -310,16 +373,16 @@ class Asmblerx16(object):
                     # print('get_updat_str', get_updat_str)
                 new_asm.append(get_updat_str)
                 continue
-            elif ele[0] == '.get_reg':
-                get_str = '''
-                    set2 a3 {var_value}
-                    subtract2 f1 a3 a3
-                    load_from_register2 a3 {target_reg}
-                '''
-                get_updat_str = get_str.format(var_value=ele[1], target_reg=ele[2])
-                # print('get_updat_str', get_updat_str)
-                new_asm.append(get_updat_str)
-                continue
+            # elif ele[0] == '.get_reg':
+            #     get_str = '''
+            #         set2 a3 {var_value}
+            #         subtract2 f1 a3 a3
+            #         load_from_register2 a3 {target_reg}
+            #     '''
+            #     get_updat_str = get_str.format(var_value=ele[1], target_reg=ele[2])
+            #     # print('get_updat_str', get_updat_str)
+            #     new_asm.append(get_updat_str)
+            #     continue
             elif ele[0] == '.expand_f1':
                 get_str = '''
                     set2 a3 {var_value}
@@ -328,7 +391,7 @@ class Asmblerx16(object):
                 get_updat_str = get_str.format(var_value=ele[1])
                 new_asm.append(get_updat_str)
                 continue
-            elif ele[0] == '.save_local_var':
+            elif ele[0] == '.save_local':
                 get_str = '''
                     set2 a3 {var_value}
                     subtract2 f1 a3 a3
@@ -338,7 +401,7 @@ class Asmblerx16(object):
                 # print('get_updat_str', get_updat_str)
                 new_asm.append(get_updat_str)
                 continue
-            elif ele[0] == '.get_local_var':
+            elif ele[0] == '.get_local':
                 get_str = '''
                     set2 a3 {var_value}
                     subtract2 f1 a3 a3
@@ -350,7 +413,7 @@ class Asmblerx16(object):
                 continue
             new_asm.append(e)
         final_str_muti_lines = '\n'.join(new_asm)
-        print('final_str_muti_lines now', final_str_muti_lines)
+        # print('final_str_muti_lines now', final_str_muti_lines)
         return final_str_muti_lines
 
     def machine_code_asm(self, asm):
@@ -366,6 +429,9 @@ class Asmblerx16(object):
         label_dict = {}
         asm = self.clear_notes(asm)
         asm = self.add_fake(asm)
+        if self.vars['has_func'] == 1:
+            asm = self.clear_notes(asm)
+            asm = self.add_fake(asm)
         lines = asm.split('\n')# 注意按行分割不然后面只拿到第一行
         for line in lines:
 
