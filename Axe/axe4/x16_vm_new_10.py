@@ -1,3 +1,7 @@
+import pygame
+import random
+import threading
+
 class Axecpux16(object):
     def __init__(self, memory):
         self.memory = memory
@@ -85,9 +89,9 @@ class Axecpux16(object):
         while True:
             pa = self.regs['pa']
             # print('pa now ', pa)
-            print('self.regs now', self.regs)
+            # print('self.regs now', self.regs)
             op_num = self.memory[pa]
-            # print('op_num now ', op_num)
+            print('op_num now ', op_num)
 
             op = self.op_name[op_num]
             print('op now', op)
@@ -286,9 +290,6 @@ class Axecpux16(object):
 
         return self.regs, self.memory
 
-
-
-
 # 1 问题在于compare_if_less不能跳转
 # 改变当前的jump方式
 # 2 问题在于1083步跳出来直到1111并不能解决问题
@@ -297,89 +298,133 @@ class Axecpux16(object):
 # 但是如果寄存器的值需要计算的比如jump_from_regs时候必须得使用自己的内容
 
 
-import pygame
-import random
+class Screen16(object):
+    def __init__(self, memory, runable):
+        self.memory = memory
+        self.display_memory = self.memory[3 : 10003]
+        self.runable = runable
+        self.size = 100
+        self.width = 300
+        self.height = 300
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        self.clock = pygame.time.Clock()
+        self.fps = 30
 
+    def run_vm(self):
+        vm = Axecpux16(self.memory)
+        vm.run()
+
+    def draw_point(self, display_memory):
+        dm = display_memory
+        len_now = 100
+        for i in range(len(dm)):
+            e = dm[i]
+            if e == 0:
+                continue
+            else:
+                x = i // len_now
+                y = i % len_now
+                position = (x, y)
+                # color = self.number_to_color(e)
+                color_red = (255, 0, 0)
+                # print('e now', e)
+                # num = hex(e)
+                # color = self.Hex_to_RGB(num)
+                self.screen.set_at(position, color_red)
+
+    def run(self):
+       # 这里开启了第二个线程，跑的是虚拟机
+        t = threading.Thread(target=self.run_vm, args=())
+        t.start()
+        while self.runable:
+            self.draw_point(self.display_memory)
+            # self.draw_block(self.display_memory, self.screen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.runable = False
+
+            pygame.display.flip()
+            self.clock.tick(self.fps)
+
+    def number_to_color(self, n, bits=16):
+        """
+        映射并不完美, 现在不想这个问题了, 比较麻烦, 暂时不想做这个
+
+        bits = 8 * n
+        rgb 比例分配(8 * n 个字节)
+        r : g : b
+        3 : 3 : 2
+        """
+        # 按比例分配 r g b
+        ratio = bits // 8
+        red_ratio = 3 * ratio
+        green_ratio = 3 * ratio
+        blue_ratio = 2 * ratio
+
+        bits = str(bits)
+        formatted = '{0:' + bits + 'b}'
+        s = formatted.format(n).replace(' ', '0')
+        length = len(s)
+
+        # 这里可能有问题, 暂时不想做这个事情
+        nr = int(s[:red_ratio], 2)
+        ng = int(s[red_ratio:length - blue_ratio], 2)
+        nb = int(s[length - blue_ratio:], 2)
+
+        # 计算出 r g b 映射后的值
+        r = int(nr / (2 ** red_ratio) * 255)
+        g = int(ng / (2 ** green_ratio) * 255)
+        b = int(nb / (2 ** blue_ratio) * 255)
+
+        color = (r, g, b)
+        return color
+
+    def run_my(self):# 出现闪退是不能有return不然直接出去了
+        while self.runable:
+            # x = 3 + 100 * 3
+            # y = random.randint(0, self.height - 1)
+            position = (50, 50)
+            # r = random.randint(0, 255)
+            # g = random.randint(0, 255)
+            # b = random.randint(0, 255)
+            # color = self.number_to_color(233)
+            # 下面是红色
+            color_red = (255, 0, 0)
+            # 下面是黄色
+            # color_yellow = (255, 255, 0)
+            self.screen.set_at(position, color_red)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.runable = False
+
+            pygame.display.flip()
+            self.clock.tick(self.fps)
+
+    def run_test(self):# 出现闪退是不能有return不然直接出去了
+        while self.runable:
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            position = (x, y)
+            r = random.randint(0, 255)
+            g = random.randint(0, 255)
+            b = random.randint(0, 255)
+            color = (r, g, b)
+            self.screen.set_at(position, color)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.runable = False
+
+            pygame.display.flip()
+            self.clock.tick(self.fps)
 
 
 def main():
-    memory = [
-        0b00000000,  # set
-        0b00100000,  # a2
-        0b10011100,  # 156, 左上角第一个像素
-        0b00000000,  # set
-        0b00110000,  # a3
-        0b00010110,  # 22, 用于斜方向设置像素，每两排设置一个
-        0b00000000,  # set
-        0b00010000,  # a1
-        0b11000011,  # 红色，我们用一字节表示 RGBA 颜色，所以这里红色就是 11000011
-        0b00000111,  # save_from_register
-        # 这个指令需要使用两个寄存器
-        # 把 a1 的值（这里是 0b11000011）写入 a2 表示的内存中
-        # 这里 a2 中是 156，这个指令会把内存地址 156 中的值设置为 0b11000011
-        0b00010000,  # a1
-        0b00100000,  # a2
-        # 设置新像素点
-        0b00000010,  # add
-        0b00100000,  # a2
-        0b00110000,  # a3
-        0b00100000,  # a2
-        0b00000111,  # save_from_register
-        0b00010000,  # a1
-        0b00100000,  # a2
-        # 设置新像素点
-        0b00000010,  # add
-        0b00100000,  # a2
-        0b00110000,  # a3
-        0b00100000,  # a2
-        0b00000111,  # save_from_register
-        0b00010000,  # a1
-        0b00100000,  # a2
-        # 设置新像素点
-        0b00000010,  # add
-        0b00100000,  # a2
-        0b00110000,  # a3
-        0b00100000,  # a2
-        0b00000111,  # save_from_register
-        0b00010000,  # a1
-        0b00100000,  # a2
-        # 设置新像素点
-        0b00000010,  # add
-        0b00100000,  # a2
-        0b00110000,  # a3
-        0b00100000,  # a2
-        0b00000111,  # save_from_register
-        0b00010000,  # a1
-        0b00100000,  # a2
-        # 结果是在显示屏上显示一条斜线，一共 5 个红色的像素点
-        0b11111111,  # 停机
-    ]
 
-    # 扩充内存长度为 256，对后面的元素填 0
-    memory = memory + [0] * (256 - len(memory))
 
-    width, height = 300, 300
-    screen = pygame.display.set_mode((width, height))
-    clock = pygame.time.Clock()
-    running = True
-    fps = 30
 
-    while running:
-        x = random.randint(0, width - 1)
-        y = random.randint(0, height - 1)
-        position = (x, y)
-        r = random.randint(0, 255)
-        g = random.randint(0, 255)
-        b = random.randint(0, 255)
-        color = (r, g, b)
-        screen.set_at(position, color)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        pygame.display.flip()
-        clock.tick(fps)
+    return
 
 if __name__ == '__main__':
     main()

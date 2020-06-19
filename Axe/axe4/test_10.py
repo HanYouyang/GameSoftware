@@ -1,6 +1,6 @@
 from x16_asm_new_10 import Asmblerx16
-from x16_vm_new_10 import Axecpux16
-from x16_screen_new_10 import Screen16
+from x16_vm_new_10 import Axecpux16, Screen16
+# from x16_screen_new_10 import Screen16
 
 def get_memory_u16(value1, value2):
     low = value1
@@ -12,7 +12,61 @@ def set_memory_u16(number: int):
     high = (number >> 8) & 0xFF
     return low, high
 
-# def test_draw_point():
+def test_screen_pygame():
+    asm ='''
+    jump @20003
+    .memory 20003;确保空间打开这么多长度
+    ;从3到1026的内存全部都是屏幕大小的
+    set2 f1 10003;栈内存开始点，但是配合第一行得1024+3
+    ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
+
+    jump @main
+    .func @add
+    .func @multiply
+    .func @factorial
+    .func @draw_point
+    @main
+    .super_call @draw_point 50 50 233
+
+    halt
+    '''
+    asmbeler = Asmblerx16()
+    output = asmbeler.machine_code_asm(asm)
+    # print('len of out put now', len(output))
+    # len_append = 65535 - len(output)
+    len_append = 30003 - len(output)
+    memory = output + [0] * len_append
+    cpu = Axecpux16(memory)
+    vm_regs, vm_memory = cpu.run()
+    # print('vm_memory now', vm_memory) # 此处是运行结束后的内容可以看到变化
+    # print('vm_regs now', vm_regs) # 此处是运行结束后的内容可以看到变化
+    # test_num = get_memory_u16(9, 4)
+    # print("print test_num 149,5", test_num)
+    # screen_ori = Screen16(memory, runable = True)
+    # screen_ori.run_test()
+
+    # screen_aft = Screen16(vm_memory, runable = True)
+    # screen_aft = Screen16(memory, runable = True)
+
+    # screen_aft.run_test()
+    # screen_aft.run()
+
+    expected_regs = {
+        'a1': 674,
+        # 'a2': 20,
+        # 'a3': 20,
+        # 'pa': '00000000',
+        # 'f1': '01010000',  # pa内存位置专用寄存器
+        # 'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+    }
+    # assert expected_xijt == output, output
+    # assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+    assert vm_memory[5053] == 233, vm_memory[308]
+
+
+
+
+# def test_array():
 #     asm ='''
 #     jump @2048
 #     .memory 2048;确保空间打开这么多长度
@@ -27,6 +81,9 @@ def set_memory_u16(number: int):
 
 
 #     @main
+#     ;.array a 2 3 4 5 6
+#     ;.var num1 a[2]
+#     ;.super_call @draw_point a[2] a[3]
 #     .super_call @draw_point 3 5 233
 
 #     halt
@@ -56,52 +113,100 @@ def set_memory_u16(number: int):
 #     }
 #     # assert expected_xijt == output, output
 #     # assert expected_regs['a1'] == vm_regs['a1'], vm_regs
-#     assert vm_memory[38] == 233, vm_memory[38]
+#     assert vm_memory[308] == 233, vm_memory[308]
 
-def test_rewrite_factorial():
-    asm ='''
-    jump @2048
-    .memory 2048;确保空间打开这么多长度
-    ;从3到1026的内存全部都是屏幕大小的
-    set2 f1 1027;栈内存开始点，但是配合第一行得1024+3
-    ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
 
-    jump @main
-    .func @multiply
-    .func @factorial
 
-    
 
-    @main
-    ;函数计算的时候是左闭右开
-    .super_call @factorial 5 2
-    halt
-    '''
-    asmbeler = Asmblerx16()
-    output = asmbeler.machine_code_asm(asm)
-    # print('len of out put now', len(output))
-    memory = output + [0] * 2048
-    cpu = Axecpux16(memory)
-    vm_regs, vm_memory = cpu.run()
+
+# def test_draw_point():
+#     asm ='''
+#     jump @2048
+#     .memory 2048;确保空间打开这么多长度
+#     ;从3到1026的内存全部都是屏幕大小的
+#     set2 f1 1027;栈内存开始点，但是配合第一行得1024+3
+#     ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
+
+#     jump @main
+#     .func @add
+#     .func @multiply
+#     .func @draw_point
+
+
+#     @main
+#     .super_call @draw_point 3 5 233
+
+#     halt
+#     '''
+    # asmbeler = Asmblerx16()
+    # output = asmbeler.machine_code_asm(asm)
+    # # print('len of out put now', len(output))
+    # memory = output + [0] * 2048
+    # cpu = Axecpux16(memory)
+    # vm_regs, vm_memory = cpu.run()
     # print('vm_memory now', vm_memory) # 此处是运行结束后的内容可以看到变化
-    # print('vm_regs now', vm_regs) # 此处是运行结束后的内容可以看到变化
+    # # print('vm_regs now', vm_regs) # 此处是运行结束后的内容可以看到变化
     
-    # screen_ori = Screen16(memory, runable = True)
-    # screen_aft = Screen16(vm_memory, runable = True)
-    # screen_ori.run_test()
-    # screen_aft.run_test()
+    # test_num = get_memory_u16(9, 4)
+    # print("print test_num 149,5", test_num)
+    # # screen_ori = Screen16(memory, runable = True)
+    # # screen_aft = Screen16(vm_memory, runable = True)
+    # # screen_ori.run_test()
+    # # screen_aft.run_test()
+    # expected_regs = {
+    #     'a1': 674,
+    #     # 'a2': 20,
+    #     # 'a3': 20,
+    #     # 'pa': '00000000',
+    #     # 'f1': '01010000',  # pa内存位置专用寄存器
+    #     # 'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+    # }
+    # # assert expected_xijt == output, output
+    # # assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+    # assert vm_memory[38] == 233, vm_memory[38]
+
+# def test_rewrite_factorial():
+#     asm ='''
+#     jump @2048
+#     .memory 2048;确保空间打开这么多长度
+#     ;从3到1026的内存全部都是屏幕大小的
+#     set2 f1 1027;栈内存开始点，但是配合第一行得1024+3
+#     ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
+
+#     jump @main
+#     .func @multiply
+#     .func @factorial
+
+#     @main
+#     ;函数计算的时候是左闭右开
+#     .super_call @factorial 5 2
+#     halt
+#     '''
+#     asmbeler = Asmblerx16()
+#     output = asmbeler.machine_code_asm(asm)
+#     # print('len of out put now', len(output))
+#     memory = output + [0] * 2048
+#     cpu = Axecpux16(memory)
+#     vm_regs, vm_memory = cpu.run()
+#     # print('vm_memory now', vm_memory) # 此处是运行结束后的内容可以看到变化
+#     # print('vm_regs now', vm_regs) # 此处是运行结束后的内容可以看到变化
+    
+#     # screen_ori = Screen16(memory, runable = True)
+#     # screen_aft = Screen16(vm_memory, runable = True)
+#     # screen_ori.run_test()
+#     # screen_aft.run_test()
 
     
-    expected_regs = {
-        'a1': 674,
-        # 'a2': 20,
-        # 'a3': 20,
-        # 'pa': '00000000',
-        # 'f1': '01010000',  # pa内存位置专用寄存器
-        # 'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
-    }
-    # assert expected_xijt == output, output
-    assert expected_regs['a1'] == vm_regs['a1'], vm_regs
+#     expected_regs = {
+#         'a1': 674,
+#         # 'a2': 20,
+#         # 'a3': 20,
+#         # 'pa': '00000000',
+#         # 'f1': '01010000',  # pa内存位置专用寄存器
+#         # 'c1': 2,  # 0 表示小于，1 表示相等，2 表示大于（对的，和上课讲的不一样）
+#     }
+#     # assert expected_xijt == output, output
+#     assert expected_regs['a1'] == vm_regs['a1'], vm_regs
     
 
 

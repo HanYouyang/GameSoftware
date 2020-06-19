@@ -14,23 +14,22 @@ class Asmblerx16(object):
                     ;再就是因为你里面除了已有的新建变量，还要调用函数
                     ;为了调用函数所以必须使用一定隔离的手段
                     ;尽管值的位置并没有改变
-                    .get_local 4 a2
-                    .get_local 6 a1
             
-                    ;此处暂定空间是10*10
+                    ;此处暂定空间是100*100
                     .get_local 6 a1;目的是获得a1得到值
-                    set2 a2 10;此处在不改动mutiply时候先把a2设置为10
+                    set2 a2 100;此处在不改动mutliply时候先把a2设置为10
                     .super_call @multiply a1 a2
+                    
                     ;此时获得的a1是需要的值
                     ;还需要a2值进行加和
                     .get_local 4 a2
                     .super_call @add a1 a2
+                    
                     ;此时a1的值是计算总的值
                     ;还需要给出具体的偏移量
                     .super_call @add a1 3
-                    ;此时是从jump后面的第三位开始计算总的便宜值
-            
-                    set2 a2 3777
+                    
+                    ;此时是从jump后面的第三位开始计算总的偏移值
                     .get_local 2 a2
                     ;此时需要给出颜色，先默认是111是红色
                     save_from_register2 a2 a1;此时需要给出颜色，先默认是111是红色
@@ -46,7 +45,8 @@ class Asmblerx16(object):
                 ''',
             '@multiply': '''
                 @multiply
-                    .expand_f1 6
+                    .expand_f1 2
+                    .expand_f1 4
                     .get_local 8 a1
                     ;获得可变a1也是最终返回值
                     .save_local 4 a1
@@ -83,7 +83,8 @@ class Asmblerx16(object):
                 ''',
             '@factorial': '''
                 @factorial
-                    .expand_f1 6
+                    .expand_f1 2
+                    .expand_f1 4
                     set2 a2 1       ;此处存储乘积值到这里，但是开始的乘积值就是输入的1
                     .save_local 4 a2 
             
@@ -300,17 +301,13 @@ class Asmblerx16(object):
                             save_from_register2 a2 a3
                         '''
                         updat_str = updat_str + loc_str_format.format(x1=arg_ary[i])
-                        if i < len_arg - 1:
-                            updat_str = updat_str + add_more_space
+                        updat_str = updat_str + add_more_space
                     elif arg_ary[i].isdigit():
                         digit_str_format = '''
                             set2 a2 {reg_value}
                             save_from_register2 a2 a3
                         '''
                         updat_str = updat_str + digit_str_format.format(reg_value=int(arg_ary[i]))
-                        # if i < len_arg - 1:
-                        #     updat_str = updat_str + add_more_space
-                            # 现在是没有考虑又存变量又存多余其他设计的变量怎么办
                         updat_str = updat_str + add_more_space
                     elif arg_ary[i] in self.vars:
                         var_str = '''
@@ -318,15 +315,13 @@ class Asmblerx16(object):
                             save_from_register2 a2 a3
                         '''
                         updat_str = updat_str + var_str.format(var_value=int(self.vars[arg_ary[i]]))
-                        if i < len_arg - 1:
-                            updat_str = updat_str + add_more_space
+                        updat_str = updat_str + add_more_space
                     else:
                         reg_str_format = '''
                             save_from_register2 {x1} a3
                         '''
                         updat_str = updat_str + reg_str_format.format(x1=arg_ary[i])
-                        if i < len_arg - 1:
-                            updat_str = updat_str + add_more_regs_space.format(x1=arg_ary[i])
+                        updat_str = updat_str + add_more_regs_space.format(x1=arg_ary[i])
                 call_replace_str = '''
                     ;此处是在存储f1的返回位置
                     set2 a3 14
@@ -373,14 +368,27 @@ class Asmblerx16(object):
                     # print('get_updat_str', get_updat_str)
                 new_asm.append(get_updat_str)
                 continue
-            # elif ele[0] == '.get_reg':
-            #     get_str = '''
-            #         set2 a3 {var_value}
-            #         subtract2 f1 a3 a3
-            #         load_from_register2 a3 {target_reg}
-            #     '''
-            #     get_updat_str = get_str.format(var_value=ele[1], target_reg=ele[2])
-            #     # print('get_updat_str', get_updat_str)
+            # elif ele[0] == '.array':
+            #     # 增加可以但是不知道如何去访问
+            #     e = ele[1]
+            #     nums_array = ele[2 : ]
+            #     self.vars[e] = nums_array
+            #     get_updat_str = '''
+            #         '''
+            #     len_nums = len(nums_array)
+            #     for i in range(len_nums):
+            #         save_array_str = '''
+            #             set2 a3 2
+            #             add2 f1 a3 f1
+            #             set2 a3 {value}
+            #             save_from_register2 a3 f1
+            #         '''
+            #         get_updat_str += save_array_str.format(value=nums_array[i])
+            #     append_updat_str = '''
+            #             set2 a3 2
+            #             add2 f1 a3 f1
+            #         '''
+            #     get_updat_str += append_updat_str
             #     new_asm.append(get_updat_str)
             #     continue
             elif ele[0] == '.expand_f1':

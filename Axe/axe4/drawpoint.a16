@@ -1,0 +1,80 @@
+    jump @20003
+    .memory 20003;确保空间打开这么多长度
+    ;从3到1026的内存全部都是屏幕大小的
+    set2 f1 10003;栈内存开始点，但是配合第一行得1024+3
+    ;此时应该尽可能减少但是明白栈内存空间开辟到了哪里
+
+    jump @main
+     @add
+        .expand_f1 2
+        .get_local 2 a2
+        .get_local 4 a1
+        add2 a1 a2 a1
+        .return 6
+    @multiply
+        .expand_f1 2
+        .expand_f1 4
+        .get_local 8 a1
+        ;获得可变a1也是最终返回值
+        .save_local 4 a1
+        set2 a2 2
+        .save_local 2 a2
+
+        @while_start
+            ;拿到a2（代表n）和a1（代表2）比较大小
+            .get_local 6 a2
+            .get_local 2 a1
+            compare a2 a1
+            jump_if_less @while_end
+
+            ;对a1进行加和，此处是a1代表的2增大为后续的3、4、5、6
+            set2 a2 1
+            add2 a1 a2 a1
+            ;把a3存在f1栈顶
+            .save_local 2 a1
+
+            ;获得原始a1的值，只是这里写作a2
+            .get_local 8 a2
+            ;获得可变的加和a1的值
+            .get_local 4 a1
+            add2 a1 a2 a1
+
+            ;及时保存可变a1的值到-4位置
+            .save_local 4 a1
+
+            jump @while_start
+        @while_end
+        .get_local 4 a1
+        .return 10 ;此处因为已经有4而局部又加了6
+    @draw_point
+        .expand_f1 2
+        ;原先下边两个分别是4和2
+        ;只是因为不可能使用a3寄存器
+        ;再就是因为你里面除了已有的新建变量，还要调用函数
+        ;为了调用函数所以必须使用一定隔离的手段
+        ;尽管值的位置并没有改变
+
+        ;此处暂定空间是100*100
+        .get_local 6 a1;目的是获得a1得到值
+        set2 a2 100;此处在不改动mutliply时候先把a2设置为10
+        .super_call @multiply a1 a2
+
+        ;此时获得的a1是需要的值
+        ;还需要a2值进行加和
+        .get_local 4 a2
+        .super_call @add a1 a2
+
+        ;此时a1的值是计算总的值
+        ;还需要给出具体的偏移量
+        .super_call @add a1 3
+
+        ;此时是从jump后面的第三位开始计算总的偏移值
+        .get_local 2 a2
+        ;此时需要给出颜色，先默认是111是红色
+        save_from_register2 a2 a1;此时需要给出颜色，先默认是111是红色
+        .return 8
+
+    @main
+    .super_call @draw_point 50 50 233
+
+    halt
