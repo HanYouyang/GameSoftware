@@ -25,6 +25,7 @@ def test_screen_pygame():
     .func @multiply
     .func @factorial
     .func @draw_point
+    
     @main
     .super_call @draw_point 50 50 233
 

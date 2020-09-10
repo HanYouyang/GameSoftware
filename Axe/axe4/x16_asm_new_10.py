@@ -324,7 +324,10 @@ class Asmblerx16(object):
                         updat_str = updat_str + add_more_regs_space.format(x1=arg_ary[i])
                 call_replace_str = '''
                     ;此处是在存储f1的返回位置
+                    ;也就是halt的位置，这里是反推出来需要把halt这个跳转位置
+                    ;存到当下的位置上面去
                     set2 a3 14
+                    ;pa是读完命令之后已经加过了，要从add2后面开始加
                     add2 pa a3 a3
                     save_from_register2 a3 f1
                     
@@ -332,6 +335,8 @@ class Asmblerx16(object):
                     ;f1之前的位置是参数，f1之后理论上可以加上局部变量参数
                     ;布局应该和所谓的函数调用相关联
                     ;最终布局就是 参数 f1返回位置 局部变量
+                    
+                    ;这里具体加几相当于是expand_f1多少，后面到函数中还得+2
                     set2 a3 {offset}
                     add2 f1 a3 f1
                     
